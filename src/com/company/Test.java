@@ -420,7 +420,7 @@ public class Test extends JPanel {
         Gene[] chromosomes = new Gene[size];
         Random rand = new Random();
         for (int i = 0; i < chromosomes.length; i++) {
-            int x1, x2, x3, x4, y1, y2, y3, y4, alpha, randomIndex;
+            int x1, x2, x3, x4, y1, y2, y3, y4, alpha, randomIndex = rand.nextInt(BaseColors.size());
             if (i == 0) {
                 x1 = 0;
                 y1 = 0;
@@ -430,7 +430,6 @@ public class Test extends JPanel {
                 y3 = height / 6;
                 x4 = width / 6;
                 y4 = height / 6;
-                randomIndex = 1 + rand.nextInt(BaseColors.size() - 1);
                 alpha = 200 + rand.nextInt(55);
             } else if (i == 1) {
                 x1 = width / 6;
@@ -441,7 +440,6 @@ public class Test extends JPanel {
                 y3 = height / 6;
                 x4 = width / 3 - 1;
                 y4 = height / 6;
-                randomIndex = 1 + rand.nextInt(BaseColors.size() - 1);
                 alpha = 200 + rand.nextInt(55);
             } else if (i == 2) {
                 x1 = 0;
@@ -452,7 +450,6 @@ public class Test extends JPanel {
                 y3 = height / 3 - 1;
                 x4 = width / 6;
                 y4 = height / 3 - 1;
-                randomIndex = 1 + rand.nextInt(BaseColors.size() - 1);
                 alpha = 200 + rand.nextInt(55);
             } else if (i == 3) {
                 x1 = width / 6;
@@ -463,104 +460,95 @@ public class Test extends JPanel {
                 y3 = height / 3 - 1;
                 x4 = width / 3;
                 y4 = height / 3 - 1;
-                randomIndex = 1 + rand.nextInt(BaseColors.size() - 1);
                 alpha = 200 + rand.nextInt(55);
-            } else if (i < chromosomes.length / 4) {
-                if (i < chromosomes.length / 8) {
-                    randomIndex = rand.nextInt(BaseColors.size());
-                    x1 = 0;
-                    y1 = 0;
-                    x2 = x1 + rand.nextInt(width / 3 - x1);
-                    y2 = rand.nextInt(height / 3 - height / 30);
-                    x3 = rand.nextInt(width / 3 - width / 30);
-                    y3 = y1 + rand.nextInt(height / 3 - y1);
-                    x4 = x3 + rand.nextInt(width / 3 - x3);
-                    y4 = y2 + rand.nextInt(height / 3 - y2);
-                    alpha = 155 + rand.nextInt(100);
-                } else {
-                    randomIndex = rand.nextInt(BaseColors.size());
-                    x1 = 0;
-                    y1 = 0;
-                    x2 = x1 + rand.nextInt(width / 6 - x1);
-                    y2 = rand.nextInt(height / 6);
-                    x3 = rand.nextInt(width / 6);
-                    y3 = y1 + rand.nextInt(height / 6 - y1);
-                    x4 = x3 + rand.nextInt(width / 6 - x3);
-                    y4 = y2 + rand.nextInt(height / 6 - y2);
-                    alpha = 155 + rand.nextInt(100);
-                }
-            } else if (i < chromosomes.length / 2) {
-                if (i < chromosomes.length / 2 - chromosomes.length / 8) {
-                    randomIndex = rand.nextInt(BaseColors.size());
-                    x1 = rand.nextInt(width / 3 - width / 30);
-                    y1 = rand.nextInt(height / 3 - height / 30);
-                    x2 = width / 3 - 1;
-                    y2 = 0;
-                    x3 = rand.nextInt(width / 3 - width / 30);
-                    y3 = y1 + rand.nextInt(height / 3 - y1);
-                    x4 = x3 + rand.nextInt(width / 3 - x3);
-                    y4 = y2 + rand.nextInt(height / 3 - y2);
-                    alpha = 155 + rand.nextInt(50);
-                } else {
-                    randomIndex = rand.nextInt(BaseColors.size());
-                    x1 = width / 6 + rand.nextInt(width / 6 - 1);
-                    y1 = rand.nextInt(height / 6);
-                    x2 = width / 3 - 1;
-                    y2 = 0;
-                    x3 = width / 6 + rand.nextInt(width / 6 - 1);
-                    y3 = y1 + rand.nextInt(height / 6 - y1);
-                    x4 = x3 + rand.nextInt(width / 3 - x3);
-                    y4 = y2 + rand.nextInt(height / 6 - y2);
-                    alpha = 155 + rand.nextInt(50);
-                }
-            } else if (i < chromosomes.length / 2 + chromosomes.length / 4) {
-                if (i < chromosomes.length / 2 + chromosomes.length / 8) {
-                    randomIndex = rand.nextInt(BaseColors.size());
-                    x1 = rand.nextInt(width / 3 - width / 30);
-                    y1 = rand.nextInt(height / 3 - height / 30);
-                    x2 = x1 + rand.nextInt(width / 3 - x1);
-                    y2 = rand.nextInt(height / 3 - height / 30);
-                    x3 = 0;
-                    y3 = height / 3 - 1;
-                    x4 = x3 + rand.nextInt(width / 3 - x3);
-                    y4 = y2 + rand.nextInt(height / 3 - y2);
-                    alpha = 155 + rand.nextInt(50);
-                } else {
-                    randomIndex = rand.nextInt(BaseColors.size());
-                    x1 = rand.nextInt(width / 6);
-                    y1 = height / 6 + rand.nextInt(height / 6 - 1);
-                    x2 = x1 + rand.nextInt(width / 6 - x1);
-                    y2 = height / 6 + rand.nextInt(height / 6 - 1);
-                    x3 = 0;
-                    y3 = height / 3 - 1;
-                    x4 = x3 + rand.nextInt(width / 6 - x3);
-                    y4 = y2 + rand.nextInt(height / 3 - y2 - 1);
-                    alpha = 155 + rand.nextInt(50);
-                }
+            } else if (i < (chromosomes.length - 4) / 8 + 4) {
+                //1st square big
+                x1 = 0;
+                y1 = 0;
+                x2 = rand.nextInt(width / 3);
+                y2 = rand.nextInt(height / 3 - 1);
+                x3 = rand.nextInt(width / 3 - 1);
+                y3 = y1 + rand.nextInt(height / 3 - y1 - 1);
+                x4 = x3 + rand.nextInt(width / 3 - x3 - 1);
+                y4 = y2 + rand.nextInt(height / 3 - y2 - 1);
+                alpha = 155 + rand.nextInt(100);
+            } else if (i < (chromosomes.length - 4) / 4 + 4) {
+                //2nd square big
+                x1 = rand.nextInt(width / 3 - 1);
+                y1 = rand.nextInt(height / 3 - 1);
+                x2 = width / 3 - 1;
+                y2 = 0;
+                x3 = rand.nextInt(width / 3 - 1);
+                y3 = y1 + rand.nextInt(height / 3 - y1 - 1);
+                x4 = x3 + rand.nextInt(width / 3 - x3 - 1);
+                y4 = y2 + rand.nextInt(height / 3 - y2 - 1);
+                alpha = 155 + rand.nextInt(50);
+            } else if (i < (chromosomes.length - 4) / 4 + (chromosomes.length - 4) / 8 + 4) {
+                //3d square big
+                x1 = rand.nextInt(width / 3 - 1);
+                y1 = rand.nextInt(height / 3 - 1);
+                x2 = x1 + rand.nextInt(width / 3 - x1 - 1);
+                y2 = rand.nextInt(height / 3 - 1);
+                x3 = 0;
+                y3 = height / 3 - 1;
+                x4 = x3 + rand.nextInt(width / 3 - x3 - 1);
+                y4 = y2 + rand.nextInt(height / 3 - y2 - 1);
+                alpha = 155 + rand.nextInt(50);
+            } else if (i < (chromosomes.length - 4) / 2 + 4) {
+                //4th square big
+                x1 = rand.nextInt(width / 3 - 1);
+                y1 = rand.nextInt(height / 3 - 1);
+                x2 = x1 + rand.nextInt(width / 3 - x1 - 1);
+                y2 = rand.nextInt(height / 3 - 1);
+                x3 = rand.nextInt(width / 3 - 1);
+                y3 = y1 + rand.nextInt(height / 3 - y1 - 1);
+                x4 = width / 3 - 1;
+                y4 = height / 3 - 1;
+                alpha = 155 + rand.nextInt(50);
+            } else if (i < (chromosomes.length - 4) / 2 + (chromosomes.length - 4) / 8 + 4) {
+                //1st square small
+                x1 = 0;
+                y1 = 0;
+                x2 = x1 + rand.nextInt(width / 6 - x1);
+                y2 = rand.nextInt(height / 6);
+                x3 = rand.nextInt(width / 6);
+                y3 = y1 + rand.nextInt(height / 6 - y1);
+                x4 = x3 + rand.nextInt(width / 6 - x3);
+                y4 = y2 + rand.nextInt(height / 6 - y2);
+                alpha = 155 + rand.nextInt(100);
+            } else if (i < (chromosomes.length - 4) / 2 + (chromosomes.length - 4) / 4 + 4) {
+                //2nd square small
+                x1 = width / 6 + rand.nextInt(width / 6 - 1);
+                y1 = rand.nextInt(height / 6);
+                x2 = width / 3 - 1;
+                y2 = 0;
+                x3 = width / 6 + rand.nextInt(width / 6 - 1);
+                y3 = y1 + rand.nextInt(height / 6 - y1);
+                x4 = x3 + rand.nextInt(width / 3 - x3);
+                y4 = y2 + rand.nextInt(height / 6 - y2);
+                alpha = 155 + rand.nextInt(50);
+            } else if (i < (chromosomes.length - 4) / 2 + (chromosomes.length - 4) / 4 + (chromosomes.length - 4) / 8 + 4) {
+                //3d square small
+                x1 = rand.nextInt(width / 6);
+                y1 = height / 6 + rand.nextInt(height / 6 - 1);
+                x2 = x1 + rand.nextInt(width / 6 - x1);
+                y2 = height / 6 + rand.nextInt(height / 6 - 1);
+                x3 = 0;
+                y3 = height / 3 - 1;
+                x4 = x3 + rand.nextInt(width / 6 - x3);
+                y4 = y2 + rand.nextInt(height / 3 - y2 - 1);
+                alpha = 155 + rand.nextInt(50);
             } else {
-                if (i < chromosomes.length - chromosomes.length / 8) {
-                    randomIndex = rand.nextInt(BaseColors.size());
-                    x1 = rand.nextInt(width / 3 - width / 30);
-                    y1 = rand.nextInt(height / 3 - height / 30);
-                    x2 = x1 + rand.nextInt(width / 3 - x1);
-                    y2 = rand.nextInt(height / 3 - height / 30);
-                    x3 = rand.nextInt(width / 3 - width / 30);
-                    y3 = y1 + rand.nextInt(height / 3 - y1);
-                    x4 = width / 3 - 1;
-                    y4 = height / 3 - 1;
-                    alpha = 155 + rand.nextInt(50);
-                } else {
-                    randomIndex = rand.nextInt(BaseColors.size());
-                    x1 = width / 6 + rand.nextInt(width / 6 - 1);
-                    y1 = height / 6 + rand.nextInt(height / 6 - 1);
-                    x2 = x1 + rand.nextInt(width / 3 - x1);
-                    y2 = height / 6 + rand.nextInt(height / 6 - 1);
-                    x3 = width / 6 + rand.nextInt(width / 6 - 1);
-                    y3 = y1 + rand.nextInt(height / 3 - y1 - 1);
-                    x4 = width / 3 - 1;
-                    y4 = height / 3 - 1;
-                    alpha = 155 + rand.nextInt(50);
-                }
+                //4th square small
+                x1 = width / 6 + rand.nextInt(width / 6 - 1);
+                y1 = height / 6 + rand.nextInt(height / 6 - 1);
+                x2 = x1 + rand.nextInt(width / 3 - x1);
+                y2 = height / 6 + rand.nextInt(height / 6 - 1);
+                x3 = width / 6 + rand.nextInt(width / 6 - 1);
+                y3 = y1 + rand.nextInt(height / 3 - y1 - 1);
+                x4 = width / 3 - 1;
+                y4 = height / 3 - 1;
+                alpha = 155 + rand.nextInt(50);
             }
             Color buff = BaseColors.get(randomIndex);
             Color color = new Color(buff.getRed(), buff.getGreen(), buff.getBlue(), alpha);
@@ -601,16 +589,14 @@ public class Test extends JPanel {
 
     private Compliance Mutation(Compliance orig, ArrayList<Color> BaseColors, BufferedImage original) {
         Random rand = new Random();
-        int index = rand.nextInt(orig.chromosome.length - 1 + 100);
+        int quarter = rand.nextInt(12);
         int randomIndex = rand.nextInt(BaseColors.size());
         int alpha = 150 + rand.nextInt(105);
         Color buff = BaseColors.get(randomIndex);
-        if (index < 25) index = 0;
-        else if (index < 50) index = 1;
-        else if (index < 75) index = 2;
-        else if (index < 100) index = 3;
-        else index = index - 100;
-
+        int index = 4 + rand.nextInt((orig.chromosome.length - 4) / 8) + quarter * (orig.chromosome.length - 4) / 8;
+        if (quarter > 7) {
+            index = quarter - 8;
+        }
         int x1 = orig.chromosome[index].x1;
         int y1 = orig.chromosome[index].y1;
         int x2 = orig.chromosome[index].x2;
@@ -619,106 +605,73 @@ public class Test extends JPanel {
         int y3 = orig.chromosome[index].y3;
         int x4 = orig.chromosome[index].x4;
         int y4 = orig.chromosome[index].y4;
-        if (index > 3) {
-            if (index < orig.chromosome.length / 4) {
-                int coordinate = rand.nextInt(8);
-                switch (coordinate) {
-                    case 0:
-                        x2 = rand.nextInt(width / 3 - 1);
-                        break;
-                    case 1:
-                        y2 = rand.nextInt(height / 3 - y4);
-                        break;
-                    case 2:
-                        x3 = rand.nextInt(width / 3 - x4);
-                        break;
-                    case 3:
-                        y3 = rand.nextInt(height / 3 - 1);
-                        break;
-                    case 4:
-                        x4 = x3 + rand.nextInt(width / 3 - x3);
-                        break;
-                    case 5:
-                        y4 = y2 + rand.nextInt(height / 3 - y2);
-                        break;
-                    default:
-                        break;
-                }
-            } else if (index < orig.chromosome.length / 2) {
-                int coordinate = rand.nextInt(8);
-                switch (coordinate) {
-                    case 0:
-                        x1 = rand.nextInt(width / 3 - 1);
-                        break;
-                    case 1:
-                        y1 = rand.nextInt(height / 3 - 1);
-                        break;
-                    case 2:
-                        x3 = rand.nextInt(width / 3 - x4);
-                        break;
-                    case 3:
-                        y3 = y1 + rand.nextInt(height / 3 - y1);
-                        break;
-                    case 4:
-                        x4 = x3 + rand.nextInt(width / 3 - x3);
-                        break;
-                    case 5:
-                        y4 = rand.nextInt(height / 3);
-                        break;
-                    default:
-                        break;
-                }
-
-            } else if (index < orig.chromosome.length / 2 + orig.chromosome.length / 4) {
-                int coordinate = rand.nextInt(8);
-                switch (coordinate) {
-                    case 0:
-                        x2 = rand.nextInt(width / 3 - 1);
-                        break;
-                    case 1:
-                        y2 = rand.nextInt(height / 3 - y4);
-                        break;
-                    case 2:
-                        x1 = rand.nextInt(width / 3 - x2);
-                        break;
-                    case 3:
-                        y1 = rand.nextInt(height / 3 - 1);
-                        break;
-                    case 4:
-                        x4 = rand.nextInt(width / 3);
-                        break;
-                    case 5:
-                        y4 = y2 + rand.nextInt(height / 3 - y2);
-                        break;
-                    default:
-                        break;
-                }
-            } else {
-                int coordinate = rand.nextInt(8);
-                switch (coordinate) {
-                    case 0:
-                        x2 = x1 + rand.nextInt(width / 3 - x1);
-                        break;
-                    case 1:
-                        y2 = rand.nextInt(height / 3 - 1);
-                        break;
-                    case 2:
-                        x3 = rand.nextInt(width / 3 - 1);
-                        break;
-                    case 3:
-                        y3 = y1 + rand.nextInt(height / 3 - y1);
-                        break;
-                    case 4:
-                        x1 = rand.nextInt(width / 3 - x2);
-                        break;
-                    case 5:
-                        y1 = rand.nextInt(height / 3 - y3);
-                        break;
-                    default:
-                        break;
-                }
-
-            }
+        switch (quarter) {
+            case 0:
+                x2 = rand.nextInt(width / 3);
+                y2 = rand.nextInt(height / 3 - 1);
+                x3 = rand.nextInt(width / 3 - 1);
+                y3 = y1 + rand.nextInt(height / 3 - y1 - 1);
+                x4 = x3 + rand.nextInt(width / 3 - x3 - 1);
+                y4 = y2 + rand.nextInt(height / 3 - y2 - 1);
+                break;
+            case 1:
+                x1 = rand.nextInt(width / 3 - 1);
+                y1 = rand.nextInt(height / 3 - 1);
+                x3 = rand.nextInt(width / 3 - 1);
+                y3 = y1 + rand.nextInt(height / 3 - y1 - 1);
+                x4 = x3 + rand.nextInt(width / 3 - x3 - 1);
+                y4 = y2 + rand.nextInt(height / 3 - y2 - 1);
+                break;
+            case 2:
+                x1 = rand.nextInt(width / 3 - 1);
+                y1 = rand.nextInt(height / 3 - 1);
+                x2 = x1 + rand.nextInt(width / 3 - x1 - 1);
+                y2 = rand.nextInt(height / 3 - 1);
+                x4 = x3 + rand.nextInt(width / 3 - x3 - 1);
+                y4 = y2 + rand.nextInt(height / 3 - y2 - 1);
+                break;
+            case 3:
+                x1 = rand.nextInt(width / 3 - 1);
+                y1 = rand.nextInt(height / 3 - 1);
+                x2 = x1 + rand.nextInt(width / 3 - x1 - 1);
+                y2 = rand.nextInt(height / 3 - 1);
+                x3 = rand.nextInt(width / 3 - 1);
+                y3 = y1 + rand.nextInt(height / 3 - y1 - 1);
+                break;
+            case 4:
+                x2 = x1 + rand.nextInt(width / 6 - x1);
+                y2 = rand.nextInt(height / 6);
+                x3 = rand.nextInt(width / 6);
+                y3 = y1 + rand.nextInt(height / 6 - y1);
+                x4 = x3 + rand.nextInt(width / 6 - x3);
+                y4 = y2 + rand.nextInt(height / 6 - y2);
+                break;
+            case 5:
+                x1 = width / 6 + rand.nextInt(width / 6 - 1);
+                y1 = rand.nextInt(height / 6);
+                x3 = width / 6 + rand.nextInt(width / 6 - 1);
+                y3 = y1 + rand.nextInt(height / 6 - y1);
+                x4 = x3 + rand.nextInt(width / 3 - x3);
+                y4 = y2 + rand.nextInt(height / 6 - y2);
+                break;
+            case 6:
+                x1 = rand.nextInt(width / 6);
+                y1 = height / 6 + rand.nextInt(height / 6 - 1);
+                x2 = x1 + rand.nextInt(width / 6 - x1);
+                y2 = height / 6 + rand.nextInt(height / 6 - 1);
+                x4 = x3 + rand.nextInt(width / 6 - x3);
+                y4 = y2 + rand.nextInt(height / 3 - y2 - 1);
+                break;
+            case 7:
+                x1 = width / 6 + rand.nextInt(width / 6 - 1);
+                y1 = height / 6 + rand.nextInt(height / 6 - 1);
+                x2 = x1 + rand.nextInt(width / 3 - x1);
+                y2 = height / 6 + rand.nextInt(height / 6 - 1);
+                x3 = width / 6 + rand.nextInt(width / 6 - 1);
+                y3 = y1 + rand.nextInt(height / 3 - y1 - 1);
+                break;
+            default:
+                break;
         }
         Color color = new Color(buff.getRed(), buff.getGreen(), buff.getBlue(), alpha);
         Gene[] genome = new Gene[orig.chromosome.length];
@@ -783,7 +736,22 @@ public class Test extends JPanel {
                 }
             });
         }
+
         Compliance[] new_population = new Compliance[population.length];
+        /*for (int i = 0; i < population.length; i += 4){
+            Compliance[] selection = {population[i], population[i + 1], population[i + 2], population[i + 3]};
+            Compliance[] Sorted = Sorter(selection);
+            Compliance[] Children = Crossover(Sorted[0], Sorted[1], orig, BaseColors);
+            Compliance Mutant1 = Mutation(Sorted[2], BaseColors, orig);
+            Compliance Mutant2 = Mutation(Sorted[3], BaseColors, orig);
+            Compliance[] new_selection = {Sorted[0], Sorted[1], Sorted[2], Sorted[3], Children[0], Children[1], Mutant1, Mutant2};
+            Compliance[] Sorted2 = Sorter(new_selection);
+            Compliance[] result = {Sorted2[0], Sorted2[1], Sorted2[2], Sorted2[3]};
+            new_population[i] = result[0];
+            new_population[i + 1] = result[1];
+            new_population[i + 2] = result[2];
+            new_population[i + 3] = result[3];
+        }*/
         for (int i = 0; i < population.length; i += 4) {
             try {
                 Future<Compliance[]> resultFuture = completionService.take(); //blocks if none available
@@ -802,19 +770,29 @@ public class Test extends JPanel {
 
     private Compliance[] Flood(Compliance[] population, ArrayList<Color> BaseColors, int size, BufferedImage origin) {
         Compliance[] new_species = new Compliance[population.length];
-        for (int i = 0; i < population.length; i++) {
+        /*for (int i = 0; i < population.length; i++) {
             Gene[] chromosome = BigColoursImage(BaseColors, size);
             new_species[i] = new Compliance(chromosome, Fitness(origin, chromosome, BaseColors));
-        }
+        }*/
         for (int i = 0; i < population.length / 4; i++) {
             new_species[i] = population[i];
+        }
+        for (int i = 0; i < population.length / 4; i += 2) {
+            Compliance[] Children = Crossover(new_species[i], new_species[i + 1], origin, BaseColors);
+            new_species[(population.length / 4) + i] = Children[0];
+            new_species[(population.length / 4) + i + 1] = Children[1];
+            Children = Crossover(new_species[i], new_species[population.length / 4 - i - 1], origin, BaseColors);
+            new_species[(population.length / 2) + i] = Children[0];
+            new_species[(population.length / 2) + i + 1] = Children[1];
+            new_species[(population.length / 2) + (population.length / 4) + i] = Mutation(new_species[i], BaseColors, origin);
+            new_species[(population.length / 2) + (population.length / 4) + i + 1] = Mutation(new_species[i + 1], BaseColors, origin);
         }
         return new_species;
     }
 
     private Gene[] GeneticColours(BufferedImage origin, ArrayList<Color> BaseColors) {
         Executor executor = Executors.newFixedThreadPool(8);
-        int size = 100;
+        int size = 84;
         Compliance[] population = new Compliance[56];
         for (int i = 0; i < 56; i++) {
             Gene[] chromosome = BigColoursImage(BaseColors, size);
@@ -835,24 +813,28 @@ public class Test extends JPanel {
             i++;
             if (Best.fitness == fit_prev) {
                 sameFit++;
-                if (sameFit == 150) {
+                if (sameFit % 150 == 0) {
                     new_population = Flood(new_population, BaseColors, size, origin);
                     System.out.println("Flood happened.");
                 }
-                if (sameFit > 300) {
+                if (sameFit > 1500) {
                     break;
                 }
             } else {
                 fit_prev = Best.fitness;
                 sameFit = 0;
             }
-            if (i%10==0)
-            System.out.println("Iteration num: " + i + " Fit: " + Best.fitness);
+            if (i % 10 == 0)
+                System.out.println("Iteration num: " + i + " Fit: " + Best.fitness);
         }
 
 
         System.out.println(Best.fitness);
         return Best.chromosome;
+    }
+
+    private Gene[] ColoursEnhancement(BufferedImage origin, ArrayList<Color> BaseColors, BufferedImage Background) {
+        return null;
     }
 
     public static void main(String[] args) throws Exception {
