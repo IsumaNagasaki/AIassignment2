@@ -263,6 +263,9 @@ public class Test extends JPanel {
                 if ((abs(origin.getRed() - iter.getRed()) < 15) & (abs(origin.getGreen() - iter.getGreen()) < 15) & (abs(origin.getBlue() - iter.getBlue()) < 15)) {
                     fit++;
                 }
+                if ((origin.getRed() == origin.getGreen()) & (origin.getRed() == origin.getBlue())) {
+                    fit++;
+                }
             }
         }
         fit = (100 * (fit / (width1 * height1 / 4)));
@@ -599,7 +602,7 @@ public class Test extends JPanel {
     private Compliance Mutation(Compliance orig, ArrayList<Color> BaseColors, BufferedImage original) {
         Random rand = new Random();
         int index = rand.nextInt(orig.chromosome.length - 1 + 100);
-        int randomIndex = 1 + rand.nextInt(BaseColors.size() - 1);
+        int randomIndex = rand.nextInt(BaseColors.size());
         int alpha = 150 + rand.nextInt(105);
         Color buff = BaseColors.get(randomIndex);
         if (index < 25) index = 0;
@@ -810,10 +813,10 @@ public class Test extends JPanel {
     }
 
     private Gene[] GeneticColours(BufferedImage origin, ArrayList<Color> BaseColors) {
-        Executor executor = Executors.newFixedThreadPool(4);
-        int size = 75;
-        Compliance[] population = new Compliance[64];
-        for (int i = 0; i < 64; i++) {
+        Executor executor = Executors.newFixedThreadPool(8);
+        int size = 100;
+        Compliance[] population = new Compliance[56];
+        for (int i = 0; i < 56; i++) {
             Gene[] chromosome = BigColoursImage(BaseColors, size);
             population[i] = new Compliance(chromosome, Fitness(origin, chromosome, BaseColors));
         }
@@ -825,11 +828,9 @@ public class Test extends JPanel {
         int sameFit = 0;
         while (Best.fitness < 50) {
             new_population = Selection(new_population, origin, BaseColors, executor);
-            for (int j = 0; j < 56; j++) {
-                if (new_population[j].fitness > Best.fitness) {
-                    Best = new_population[j];
-                    System.out.println(j + " best population number");
-                }
+            if (new_population[0].fitness > Best.fitness) {
+                Best = new_population[0];
+                System.out.println(i + " best population number");
             }
             i++;
             if (Best.fitness == fit_prev) {
@@ -845,6 +846,7 @@ public class Test extends JPanel {
                 fit_prev = Best.fitness;
                 sameFit = 0;
             }
+            if (i%10==0)
             System.out.println("Iteration num: " + i + " Fit: " + Best.fitness);
         }
 
