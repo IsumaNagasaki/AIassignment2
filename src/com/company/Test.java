@@ -611,10 +611,25 @@ public class Test extends JPanel {
             }
             return Unsorted;
         }
+        private Compliance[] Shuffle (Compliance[] selection){
+            Random rand = new Random();
+            Compliance[] shuffle = new Compliance[selection.length];
+            for (int i= 0; i<selection.length; i++){
+                shuffle[i]=new Compliance(selection[i].chromosome, selection[i].fitness);
+            }
+            for (int i=0; i<selection.length; i++){
+                    int index= i+rand.nextInt(selection.length-i+15);
+                    if (index<selection.length){
+                    Compliance buff = new Compliance(shuffle[i].chromosome, shuffle[i].fitness);
+                    shuffle[i]= new Compliance(shuffle[index].chromosome, shuffle[index].fitness);
+                    shuffle[index]=new Compliance(buff.chromosome, buff.fitness);}
+            }
+            return shuffle;
+        }
 
         private Compliance[] Selection (Compliance[] population, BufferedImage orig, ArrayList<Color> BaseColors){
-            Compliance[] new_population= new Compliance[56];
-            for (int i=0; i<population.length/2; i+=4) {
+            Compliance[] new_population= Shuffle(population);
+            for (int i=0; i<population.length; i+=4) {
                 Compliance[] selection = {population[i], population[i + 1], population[i + 2], population[i + 3]};
                 Compliance[] Sorted = Sorter(selection);
                 Compliance[] Children = Crossover(Sorted[0], Sorted[1], orig, BaseColors);
@@ -626,12 +641,6 @@ public class Test extends JPanel {
                 new_population[i + 1] = Sorted2[1];
                 new_population[i + 2] = Sorted2[2];
                 new_population[i + 3] = Sorted2[3];
-            }
-            for (int i=population.length/2; i<population.length; i+=4){
-                new_population[i] = population[i];
-                new_population[i + 1] = Crossover(population[i], population[i+1], orig, BaseColors)[0];
-                new_population[i + 2] = population[i+2];
-                new_population[i + 3] = Crossover(population[i+2], population[i+3], orig, BaseColors)[1];
             }
             new_population=Sorter(new_population);
             return new_population;
@@ -650,10 +659,11 @@ public class Test extends JPanel {
             float fit_prev=Best.fitness;
             int sameFit=0;
             while (Best.fitness<35){
-                new_population= Selection(population, origin, BaseColors);
+                new_population= Selection(new_population, origin, BaseColors);
                 for (int j=0; j<56; j++){
                     if (new_population[j].fitness>Best.fitness){
                         Best=new_population[j];
+                        System.out.println(j+" best population number");
                     }
                 }
                 i++;
