@@ -15,4 +15,15 @@ public class Gene {
         this.y3 = y3;
         this.y4 = y4;
     }
+    public Gene(Gene gene){
+        this.color = new Color(gene.color.getRed(), gene.color.getGreen(), gene.color.getBlue(), gene.color.getAlpha());
+        this.x1 = gene.x1;
+        this.x2 = gene.x2;
+        this.x3 = gene.x3;
+        this.x4 = gene.x4;
+        this.y1 = gene.y1;
+        this.y2 = gene.y2;
+        this.y3 = gene.y3;
+        this.y4 = gene.y4;
+    }
 }
