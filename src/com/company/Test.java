@@ -50,13 +50,15 @@ public class Test extends JPanel {
             Gene[] genes= BigColoursImage(ColoredList, 50);
             Gene[] bestOf = GeneticColours(Small, ColoredList);
             BufferedImage haha = ImageFromColorGenes  (bestOf, ColoredList.get(0));
+            BufferedImage coloured = BigImageFromColorGenes(bestOf, ColoredList.get(0));
 
             g.drawImage(Small, 140, 20, this);
             g.drawImage(he, 140+(width/3), 20, this);
             g.drawImage(ha, 140+2*(width/3), 20, this);
             g.drawImage(haha, 140, 20+(width/3), this);
             g.drawImage(img4, 652, 20, this);
-            g.drawImage(img2, 140, 532, this);
+            //g.drawImage(img2, 140, 532, this);
+            g.drawImage(coloured, 140, 532, this);
             g.drawImage(img3, 652, 532, this);
             //g.drawImage(img, 1164, 20, this);
         }
@@ -336,6 +338,31 @@ public class Test extends JPanel {
             else {
                 return LastColours;}
         }
+        //makes big picture from color1_genome
+        private BufferedImage BigImageFromColorGenes (Gene[] chromosomes, Color FirstColor){
+            BufferedImage image1 = new BufferedImage(width, height,BufferedImage.TYPE_INT_RGB);
+            for (int i=0; i<width; i++){
+                for (int j=0; j<height; j++){
+                    image1.setRGB(i, j, FirstColor.getRGB());
+                }
+            }
+            Graphics g = image1.createGraphics();
+            for (int i=0; i<chromosomes.length; i++){
+                g.setColor(chromosomes[i].color);
+                int[] xArr={chromosomes[i].x1*3, chromosomes[i].x2*3, chromosomes[i].x4*3, chromosomes[i].x3*3};
+                int[] yArr={chromosomes[i].y1*3, chromosomes[i].y2*3, chromosomes[i].y4*3, chromosomes[i].y3*3};
+                g.drawPolygon(xArr, yArr, 4);
+                g.fillPolygon(xArr, yArr, 4);
+            }
+            try{
+            File output = new File("GeneticColours.jpg");
+            ImageIO.write(image1, "jpg", output);
+            }
+            catch (Exception e) {}
+            g.dispose();
+            return image1;
+        }
+        //makes Smallin3 picture from color1_genome
         private BufferedImage ImageFromColorGenes (Gene[] chromosomes, Color FirstColor){
             BufferedImage image1 = new BufferedImage((int)(width/3), (int)(width/3),BufferedImage.TYPE_INT_RGB);
             for (int i=0; i<width/3; i++){
@@ -645,8 +672,19 @@ public class Test extends JPanel {
             new_population=Sorter(new_population);
             return new_population;
         }
+        private Compliance[] Flood (Compliance[] population, ArrayList<Color> BaseColors, int size, BufferedImage origin){
+            Compliance[] new_species = new Compliance[population.length];
+            for (int i=0; i<population.length; i++){
+                Gene[] chromosome=BigColoursImage(BaseColors, size);
+                new_species[i]= new Compliance(chromosome, Fitness(origin, chromosome, BaseColors));
+            }
+            for (int i=0; i<population.length/4; i++){
+                new_species[i]=population[i];
+            }
+            return new_species;
+        }
         private Gene[] GeneticColours (BufferedImage origin, ArrayList<Color> BaseColors){
-            int size = 50;
+            int size = 75;
             Compliance[] population = new Compliance[56];
             for (int i=0; i<56; i++){
                 Gene[] chromosome=BigColoursImage(BaseColors, size);
@@ -658,7 +696,7 @@ public class Test extends JPanel {
             int i=0;
             float fit_prev=Best.fitness;
             int sameFit=0;
-            while (Best.fitness<35){
+            while (Best.fitness<50){
                 new_population= Selection(new_population, origin, BaseColors);
                 for (int j=0; j<56; j++){
                     if (new_population[j].fitness>Best.fitness){
@@ -669,7 +707,11 @@ public class Test extends JPanel {
                 i++;
                 if (Best.fitness==fit_prev){
                     sameFit++;
-                    if(sameFit>150){
+                    if(sameFit==150){
+                        new_population=Flood(new_population,BaseColors,size,origin);
+                        System.out.println("Flood happened.");
+                    }
+                    if(sameFit>300){
                         break;
                     }
                 }
