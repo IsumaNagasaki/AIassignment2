@@ -42,17 +42,20 @@ public class Test extends JPanel {
         BufferedImage img3 = ColouredImage();
         Image img4 = Recombination(img2, img3);
 
-        ArrayList<Color> ColoredList = BaseColors(img3, 0);
-        ArrayList<Color> ColoredListLast = BaseColors(img3, 1);
-        ColoredListLast.remove(ColoredListLast.size()-1);
+        ArrayList<ColorWithTimes> ColoredList = BaseColors(img3, 0);
+        ArrayList<ColorWithTimes> AllColors = BaseColors(img3, 1);
         Image he = BaseColorsImage(ColoredList);
-        Image ha = BaseColorsImage(ColoredListLast);
         BufferedImage Small = SmallIn3(img3);
 
-        //Gene[] genes = BigColoursImage(ColoredList, 50);
-        //Gene[] bestOf = GeneticColours(Small, ColoredList);
-        //BufferedImage haha = ImageFromColorGenes(bestOf, ColoredList.get(0));
-        //BufferedImage coloredImageBig = BigImageFromColorGenes(bestOf, ColoredList.get(0));
+        ArrayList<Color> Base = new ArrayList<>();
+        for (int i = 0; i< ColoredList.size(); i++){
+            Base.add(ColoredList.get(i).color);
+        }
+
+        //Gene[] genes = BigColoursImage(Base, 50);
+        //Gene[] bestOf = GeneticColours(Small, Base);
+        //BufferedImage haha = ImageFromColorGenes(bestOf, Base.get(0));
+        //BufferedImage coloredImageBig = BigImageFromColorGenes(bestOf, Base.get(0));
 
 
         try {
@@ -79,9 +82,19 @@ public class Test extends JPanel {
         } catch (Exception e) {
             System.out.println("Troubles with reading picture.");
         }
+        for( int i=0; i<AllColors.size(); i++){
+            if (AllColors.get(i).frequency<5){
+                AllColors.remove(i);
+                i--;
+            }
+            if (AllColors.get(i).frequency>1200){
+                AllColors.get(i).frequency=1000+AllColors.get(i).frequency/15;
+            }
+            else AllColors.get(i).frequency=AllColors.get(i).frequency+250;
+        }
 
-        Gene[] colorEnhance = ColoursEnhancement(colourScale, ColoredList, ColoredListLast, coloredImageBig);
-        BufferedImage enhanceImage = ImageFromColorEnhancement(colorEnhance, coloredImageBig);
+        Gene[] colorEnhance = ColoursEnhancement(colourScale, ColoredList, coloredImageBig);
+        BufferedImage enhanceImage = ImageFromColorEnhancement(colorEnhance, coloredImageSmall);
         ArrayList<int[]> squares = AreasToEnhance(colourScale, coloredImageBig, 64);
         BufferedImage Black = Squares(coloredImageBig, squares, 64);
 
@@ -89,7 +102,6 @@ public class Test extends JPanel {
 
         g.drawImage(Small, 140, 20, this);
         g.drawImage(he, 140 + (width / 3), 20, this);
-        g.drawImage(ha, 140 + 2 * (width / 3), 20, this);
         //g.drawImage(haha, 140, 20 + (width / 3), this);
         g.drawImage(enhanceImage, 652, 20, this);
         //g.drawImage(whatToImprove, 652, 20, this);
@@ -232,40 +244,40 @@ public class Test extends JPanel {
         return image1;
     }
 
-    private Image BaseColorsImage(ArrayList<Color> BestColours) {
+    private Image BaseColorsImage(ArrayList<ColorWithTimes> BestColours) {
         BufferedImage image1 = new BufferedImage((width / 3), (width / 3), BufferedImage.TYPE_INT_RGB);
         for (int i = 0; i < width / 18; i++) {
             for (int j = 0; j < height / 3; j++) {
-                Color c1 = BestColours.get(0);
+                Color c1 = BestColours.get(0).color;
                 image1.setRGB(j, i, c1.getRGB());
             }
             if (BestColours.size() >= 2) {
                 for (int j = 0; j < height / 3; j++) {
-                    Color c2 = BestColours.get(1);
+                    Color c2 = BestColours.get(1).color;
                     image1.setRGB(j, i + 28, c2.getRGB());
                 }
             }
             if (BestColours.size() >= 3) {
                 for (int j = 0; j < height / 3; j++) {
-                    Color c1 = BestColours.get(2);
+                    Color c1 = BestColours.get(2).color;
                     image1.setRGB(j, i + 56, c1.getRGB());
                 }
             }
             if (BestColours.size() >= 4) {
                 for (int j = 0; j < height / 3; j++) {
-                    Color c1 = BestColours.get(3);
+                    Color c1 = BestColours.get(3).color;
                     image1.setRGB(j, i + 84, c1.getRGB());
                 }
             }
             if (BestColours.size() >= 5) {
                 for (int j = 0; j < height / 3; j++) {
-                    Color c1 = BestColours.get(4);
+                    Color c1 = BestColours.get(4).color;
                     image1.setRGB(j, i + 112, c1.getRGB());
                 }
             }
             if (BestColours.size() >= 6) {
                 for (int j = 0; j < height / 3; j++) {
-                    Color c1 = BestColours.get(5);
+                    Color c1 = BestColours.get(5).color;
                     image1.setRGB(j, i + 140, c1.getRGB());
                 }
             }
@@ -387,101 +399,65 @@ public class Test extends JPanel {
         return squares;
     }
 
-    private ArrayList<Color> BaseColors(BufferedImage ColoredImage, int flag) {
+    private ArrayList<ColorWithTimes> BaseColors(BufferedImage ColoredImage, int flag) {
 
-        ArrayList<Color> ColoredList = new ArrayList<>();
-        ArrayList<Integer> frequency = new ArrayList<>();
-        ArrayList<Integer> BestFrequency = new ArrayList<>();
-        ArrayList<Integer> LastFrequency = new ArrayList<>();
-        ArrayList<Color> BestColours = new ArrayList<>();
-        ArrayList<Color> LastColours = new ArrayList<>();
-        for (int i = 0; i < height / 3; i++) {
-            for (int j = 0; j < width / 3; j++) {
-                Color color = new Color(ColoredImage.getRGB(3 * j, 3 * i));
+        ArrayList<ColorWithTimes> ColoredList = new ArrayList<>();
+        ArrayList<ColorWithTimes> BestColours = new ArrayList<>();
+        for (int i = 0; i < height; i+=3) {
+            for (int j = 0; j < width; j+=3) {
+                Color color = new Color(ColoredImage.getRGB(j, i));
                 float r_percent = 100 * color.getRed() / (float) 255;
                 float g_percent = 100 * color.getGreen() / (float) 255;
                 float b_percent = 100 * color.getBlue() / (float) 255;
-                if ((r_percent > 45) || (g_percent > 45) || (b_percent > 45)) {
-                    ColoredList.add(color);
-                    frequency.add(1);
-                }
+                if ((r_percent<15)||(g_percent<15)||(b_percent<15)||(r_percent>45)||(g_percent>45)||(b_percent>45))
+                ColoredList.add(new ColorWithTimes(color, 1));
             }
         }
         for (int i = 0; i < ColoredList.size(); i++) {
-            int red = ColoredList.get(i).getRed();
-            int green = ColoredList.get(i).getGreen();
-            int blue = ColoredList.get(i).getBlue();
-            float r_percent = 100 * red / (float) 255;
-            float g_percent = 100 * green / (float) 255;
-            float b_percent = 100 * blue / (float) 255;
+            float r_percent = 100 * (float)ColoredList.get(i).color.getRed() / 255;
+            float g_percent = 100 * (float)ColoredList.get(i).color.getGreen() / 255;
+            float b_percent = 100 * (float)ColoredList.get(i).color.getBlue() / 255;
             for (int j = i + 1; j < ColoredList.size() - i; j++) {
-                int red_comp = ColoredList.get(j).getRed();
-                int green_comp = ColoredList.get(j).getGreen();
-                int blue_comp = ColoredList.get(j).getBlue();
-                float r_percent_comp = 100 * red_comp / (float) 255;
-                float g_percent_comp = 100 * green_comp / (float) 255;
-                float b_percent_comp = 100 * blue_comp / (float) 255;
+                float r_percent_comp = 100 * (float)ColoredList.get(j).color.getRed() / 255;
+                float g_percent_comp = 100 * (float)ColoredList.get(j).color.getGreen() / 255;
+                float b_percent_comp = 100 * (float)ColoredList.get(j).color.getBlue() / 255;
                 if ((abs(r_percent - r_percent_comp) < 12) && (abs(g_percent - g_percent_comp) < 12) && (abs(b_percent - b_percent_comp) < 12)) {
-                    frequency.set(i, frequency.get(i) + 1);
+                    ColoredList.get(i).frequency=ColoredList.get(i).frequency+1;
                     float max_percent = MaxOf3(r_percent_comp, g_percent_comp, b_percent_comp);
-                    if (((max_percent == r_percent_comp) & (r_percent_comp > r_percent)) || ((max_percent == g_percent_comp) & (g_percent_comp > g_percent)) || ((max_percent == b_percent_comp) & (b_percent_comp > b_percent)))
-                        ColoredList.set(i, ColoredList.get(j));
+                    if ((((max_percent == r_percent_comp) & (r_percent_comp > r_percent)) || ((max_percent == g_percent_comp) & (g_percent_comp > g_percent)) || ((max_percent == b_percent_comp) & (b_percent_comp > b_percent)))&(max_percent>45)) {
+                        Color color = ColoredList.get(j).color;
+                        int frequency = ColoredList.get(i).frequency;
+                        ColoredList.set(i, new ColorWithTimes(color, frequency));
+                    }
                     ColoredList.remove(j);
-                    frequency.remove(j);
+                    j--;
                 }
             }
         }
         if (flag == 0) {
-            BestFrequency.add(frequency.get(0));
             BestColours.add(ColoredList.get(0));
-            if (frequency.size() > 5) {
+            if (ColoredList.size() > 5) {
                 for (int i = 1; i < 6; i++) {
-                    BestFrequency.add(frequency.get(i));
                     BestColours.add(ColoredList.get(i));
                 }
             }
-            for (int k = 0; k < frequency.size(); k++) {
+            for (int k = 0; k < ColoredList.size(); k++) {
 
-                for (int t = 0; t < BestFrequency.size(); t++) {
-                    if (frequency.get(k) > BestFrequency.get(t)) {
-                        BestFrequency.add(t, frequency.get(k));
+                for (int t = 0; t < BestColours.size(); t++) {
+                    if (ColoredList.get(k).frequency > BestColours.get(t).frequency) {
                         BestColours.add(t, ColoredList.get(k));
                         break;
                     }
                 }
-                if (BestFrequency.size() == 11) {
-                    BestFrequency.remove(10);
+                if (BestColours.size() == 11) {
                     BestColours.remove(10);
-                }
-            }
-        } else {
-            LastFrequency.add(frequency.get(0));
-            LastColours.add(ColoredList.get(0));
-            if (frequency.size() > 5) {
-                for (int i = 1; i < 6; i++) {
-                    LastFrequency.add(frequency.get(i));
-                    LastColours.add(ColoredList.get(i));
-                }
-            }
-            for (int k = 0; k < frequency.size(); k++) {
-
-                for (int t = 0; t < LastFrequency.size(); t++) {
-                    if (frequency.get(k) < LastFrequency.get(t)) {
-                        LastFrequency.add(t, frequency.get(k));
-                        LastColours.add(t, ColoredList.get(k));
-                        break;
-                    }
-                }
-                if (LastFrequency.size() == 7) {
-                    LastFrequency.remove(6);
-                    LastColours.remove(6);
                 }
             }
         }
         if (flag == 0) {
             return BestColours;
         } else {
-            return LastColours;
+            return ColoredList;
         }
     }
 
@@ -817,19 +793,29 @@ public class Test extends JPanel {
         return result;
     }
 
-    private Compliance Mutation(Compliance orig, ArrayList<Color> BestColors, ArrayList<Color> LeastColors, BufferedImage original, BufferedImage background) {
+    private Compliance Mutation(Compliance orig, ArrayList<ColorWithTimes> AllColors, BufferedImage original, BufferedImage background) {
         Random rand = new Random();
         int times = 1 + rand.nextInt(orig.chromosome.length - 1);
         Gene[] genome = new Gene[orig.chromosome.length];
+        int frequencySum = 0;
+        for (int i=0; i<AllColors.size(); i++){
+            frequencySum = frequencySum+AllColors.get(i).frequency;
+        }
         for (int k = 0; k < times; k++) {
             int alpha = 100 + rand.nextInt(155);
             int index = rand.nextInt(orig.chromosome.length);
-            int randomIndex = rand.nextInt(BestColors.size()*3+LeastColors.size());
-            Color buff;
-            if (randomIndex<BestColors.size()*3){
-                buff = BestColors.get(randomIndex/3);}
-            else
-                buff = LeastColors.get(randomIndex-BestColors.size()*3);
+            int randomIndex = rand.nextInt(frequencySum);
+            Color buff=AllColors.get(0).color;
+            frequencySum=0;
+            for (int j=0; j<AllColors.size(); j++){
+                if (randomIndex>=frequencySum) {
+                    frequencySum = frequencySum + AllColors.get(j).frequency;
+                    if (randomIndex<frequencySum){
+                        buff = AllColors.get(j).color;
+                        break;
+                    }
+                }
+            }
             Color color = new Color(buff.getRed(), buff.getGreen(), buff.getBlue(), alpha);
             for (int i = 0; i < orig.chromosome.length; i++) {
                 if (i == index) {
@@ -925,7 +911,7 @@ public class Test extends JPanel {
         return new_population;
     }
 
-    private Compliance[] Selection(Compliance[] population, BufferedImage orig, ArrayList<Color> BaseColors, ArrayList<Color> LeastColors, Executor exec, BufferedImage Background) {
+    private Compliance[] Selection(Compliance[] population, BufferedImage orig, ArrayList<ColorWithTimes> AllColors, Executor exec, BufferedImage Background) {
         CompletionService<Compliance[]> completionService = new ExecutorCompletionService<Compliance[]>(exec);
         population = Shuffle(population);
         for (int i = 0; i < population.length; i += 4) {
@@ -934,8 +920,8 @@ public class Test extends JPanel {
                 public Compliance[] call() {
                     Compliance[] Sorted = Sorter(selection);
                     Compliance[] Children = Crossover(Sorted[0], Sorted[1], orig, Background);
-                    Compliance Mutant1 = Mutation(Sorted[2], BaseColors, LeastColors, orig, Background);
-                    Compliance Mutant2 = Mutation(Sorted[3], BaseColors, LeastColors, orig, Background);
+                    Compliance Mutant1 = Mutation(Sorted[2], AllColors, orig, Background);
+                    Compliance Mutant2 = Mutation(Sorted[3], AllColors, orig, Background);
                     Compliance[] new_selection = {Sorted[0], Sorted[1], Sorted[2], Sorted[3], Children[0], Children[1], Mutant1, Mutant2};
                     Compliance[] Sorted2 = Sorter(new_selection);
                     Compliance[] result = {Sorted2[0], Sorted2[1], Sorted2[2], Sorted2[3]};
@@ -982,7 +968,7 @@ public class Test extends JPanel {
         return new_species;
     }
 
-    private Compliance[] MinimizingSquares(Gene[] Best, ArrayList<Color> BestColors, ArrayList<Color> LeastColors, BufferedImage origin, BufferedImage Background, int population_size, int squares, int k){
+    private Compliance[] MinimizingSquares(Gene[] Best, ArrayList<ColorWithTimes> AllColors, BufferedImage origin, BufferedImage Background, int population_size, int squares, int k){
 
         int squareSize= width/squares;
         float fit = Fitness(origin, Background, Best);
@@ -1025,7 +1011,7 @@ public class Test extends JPanel {
 
         Compliance[] population = new Compliance[population_size];
         for (int i = 0; i < population_size; i++) {
-            Gene[] genome = AllColorsImage(BestColors, LeastColors, squareSize, areas);
+            Gene[] genome = AllColorsImage(AllColors, squareSize, areas);
             population[i] = new Compliance(genome, Fitness(origin, enhanceImage, genome));
         }
         return population;
@@ -1161,30 +1147,38 @@ public class Test extends JPanel {
         return image1;
     }
 
-    private Gene[] AllColorsImage(ArrayList<Color> BestColors, ArrayList<Color> LeastColors, int squareSize, ArrayList<int[]> squares) {
+    private Gene[] AllColorsImage(ArrayList<ColorWithTimes> AllColors, int squareSize, ArrayList<int[]> squares) {
         Gene[] genome = new Gene[squares.size()];
         Random rand = new Random();
+        int frequencySum = 0;
+        for (int i=0; i<AllColors.size(); i++){
+            frequencySum = frequencySum+AllColors.get(i).frequency;
+        }
         for (int i = 0; i < squares.size(); i++) {
-            int randomIndex = rand.nextInt(BestColors.size()*3+LeastColors.size());
+            int randomIndex = rand.nextInt(frequencySum);
             int alpha = 100 + rand.nextInt(155);
-            Color buff;
-            if (randomIndex<BestColors.size()*3){
-            buff = BestColors.get(randomIndex/3);}
-            else
-                buff = LeastColors.get(randomIndex-BestColors.size()*3);
+            Color buff=AllColors.get(0).color;
+            int sum=0;
+            for (int j=0; j<AllColors.size(); j++){
+                sum= sum+AllColors.get(j).frequency;
+                if (sum> randomIndex){
+                    buff = AllColors.get(j).color;
+                    break;
+                }
+            }
             Color color = new Color(buff.getRed(), buff.getGreen(), buff.getBlue(), alpha);
             genome[i] = new Gene(color, squares.get(i)[0], squares.get(i)[1], squares.get(i)[0] + squareSize, squares.get(i)[1], squares.get(i)[0], squares.get(i)[1] + squareSize, squares.get(i)[0] + squareSize, squares.get(i)[1] + squareSize);
         }
         return genome;
     }
 
-    private Gene[] ColoursEnhancement(BufferedImage origin, ArrayList<Color> BestColors, ArrayList<Color> LeastColors, BufferedImage Background) {
+    private Gene[] ColoursEnhancement(BufferedImage origin, ArrayList<ColorWithTimes> AllColors, BufferedImage Background) {
         int squaresInLine = 64;
         int squareSize = width / squaresInLine;
         Compliance[] population = new Compliance[56];
         ArrayList<int[]> squares = AreasToEnhance(origin, Background, squaresInLine);
         for (int i = 0; i < 56; i++) {
-            Gene[] genome = AllColorsImage(BestColors, LeastColors, squareSize, squares);
+            Gene[] genome = AllColorsImage(AllColors, squareSize, squares);
             population[i] = new Compliance(genome, Fitness(origin, Background, genome));
         }
 
@@ -1196,7 +1190,7 @@ public class Test extends JPanel {
         float fit_prev = Best.fitness;
         int sameFit = 0;
         while (Best.fitness < new_population[0].chromosome.length) {
-            new_population = Selection(new_population, origin, BestColors, LeastColors, executor, Background);
+            new_population = Selection(new_population, origin, AllColors, executor, Background);
             if (new_population[0].fitness > Best.fitness) {
                 Best = new_population[0];
                 System.out.println(i + " new best specie");
@@ -1205,7 +1199,7 @@ public class Test extends JPanel {
             }
             i++;
             if (i % 25 == 0) {
-                new_population = MinimizingSquares(new_population[0].chromosome, BestColors, LeastColors, origin, Background,56, squaresInLine, i);
+                new_population = MinimizingSquares(new_population[0].chromosome, AllColors, origin, Background,56, squaresInLine, i);
                 System.out.println(new_population[0].chromosome.length);
                 Best = new_population[0];
                 fit_prev=Best.fitness;
@@ -1217,7 +1211,7 @@ public class Test extends JPanel {
             if (Best.fitness == fit_prev) {
                 sameFit++;
 
-                if (sameFit > 50) {
+                if (sameFit % 25==0) {
                     break;
                 }
             } else {
@@ -1231,7 +1225,7 @@ public class Test extends JPanel {
         int flag = 0;
         Gene[] whatToDraw = new Gene[Best.chromosome.length-areas.size()];
         int index = 0;
-        for (int f=0; i<Best.chromosome.length; f++){
+        for (int f=0; f<Best.chromosome.length; f++){
             for (int j=0; j<areas.size(); j++){
                 if ((Best.chromosome[f].x1==areas.get(j)[0])&(Best.chromosome[f].y1==areas.get(j)[1])){
                     flag=1;
