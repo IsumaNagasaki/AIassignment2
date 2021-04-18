@@ -42,22 +42,21 @@ public class Test extends JPanel {
     public void paint(Graphics g) {
         BufferedImage img2 = GrayImage();
         BufferedImage img3 = ColouredImage();
-        Image img4 = Recombination(img2, img3);
+        BufferedImage img4 = Recombination(img2, img3);
 
         ArrayList<ColorWithTimes> ColoredList = BaseColors(img3, 0);
         ArrayList<ColorWithTimes> AllColors = BaseColors(img3, 1);
-        Image he = BaseColorsImage(ColoredList);
+        //Image he = BaseColorsImage(ColoredList);
         BufferedImage Small = SmallIn3(img3);
 
         ArrayList<Color> Base = new ArrayList<>();
-        for (int i = 0; i< ColoredList.size(); i++){
-            if(i<4)
-            Base.add(ColoredList.get(i).color);
+        for (int i = 0; i < ColoredList.size(); i++) {
+            if (i < 4)
+                Base.add(ColoredList.get(i).color);
         }
 
         Gene[] bestOf = GeneticColours(Small, Base);
         BufferedImage coloredImageBig = BigImageFromColorGenes(bestOf, Base.get(0));
-
 
 
         try {
@@ -84,15 +83,14 @@ public class Test extends JPanel {
         } catch (Exception e) {
             System.out.println("Troubles with reading picture.");
         }
-        for( int i=0; i<AllColors.size(); i++){
-            if (AllColors.get(i).frequency<5){
+        for (int i = 0; i < AllColors.size(); i++) {
+            if (AllColors.get(i).frequency < 5) {
                 AllColors.remove(i);
                 i--;
             }
-            if (AllColors.get(i).frequency>1200){
-                AllColors.get(i).frequency=1000+AllColors.get(i).frequency/15;
-            }
-            else AllColors.get(i).frequency=AllColors.get(i).frequency+250;
+            if (AllColors.get(i).frequency > 1200) {
+                AllColors.get(i).frequency = 1000 + AllColors.get(i).frequency / 15;
+            } else AllColors.get(i).frequency = AllColors.get(i).frequency + 250;
         }
 
         Gene[] colorEnhance = ColoursEnhancement(colourScale, ColoredList, coloredImageBig);
@@ -101,8 +99,14 @@ public class Test extends JPanel {
         System.out.println("Starting...");
         ArrayList<GrayGene> GrayGenome = GeneticShadows(img2, 80);
         BufferedImage GrayOne = GrayImage(GrayGenome);
-        Image result = Recombination(GrayOne, enhanceImage);
+        BufferedImage result = Recombination(GrayOne, enhanceImage);
 
+        try {
+            File output = new File("RESULT.jpg");
+            ImageIO.write(result, "jpg", output);
+        } catch (Exception e) {
+            System.out.println("Troubles with picture saving.");
+        }
 
         //g.drawImage(Small, 140, 20, this);
         //g.drawImage(he, 140 + (width / 3), 20, this);
@@ -120,6 +124,7 @@ public class Test extends JPanel {
         //g.drawImage(img, 1164, 20, this);
     }
 
+    //gray Image from original
     private BufferedImage GrayImage() {
         BufferedImage image1 = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         try {
@@ -148,6 +153,7 @@ public class Test extends JPanel {
         return image1;
     }
 
+    //coloured image from original
     private BufferedImage ColouredImage() {
         BufferedImage image1 = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         try {
@@ -183,7 +189,8 @@ public class Test extends JPanel {
         return image1;
     }
 
-    private Image Recombination(BufferedImage GrayImage, BufferedImage ColouredImage) {
+    //recombination of gray and color images to gain the original or the result
+    private BufferedImage Recombination(BufferedImage GrayImage, BufferedImage ColouredImage) {
         BufferedImage image1 = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         try {
             for (int i = 0; i < height; i++) {
@@ -236,11 +243,13 @@ public class Test extends JPanel {
         return image1;
     }
 
+    //math function
     private float MaxOf3(float a, float b, float c) {
         if ((a > b) & (a > c)) return a;
         else return Math.max(b, c);
     }
 
+    //returns compressed image
     private BufferedImage SmallIn3(BufferedImage ColoredImage) {
         BufferedImage image1 = new BufferedImage((width / 3), (width / 3), BufferedImage.TYPE_INT_RGB);
         for (int i = 0; i < height / 3; i++) {
@@ -252,6 +261,7 @@ public class Test extends JPanel {
         return image1;
     }
 
+    //image with base colours, for check
     private Image BaseColorsImage(ArrayList<ColorWithTimes> BestColours) {
         BufferedImage image1 = new BufferedImage((width / 3), (width / 3), BufferedImage.TYPE_INT_RGB);
         for (int i = 0; i < width / 18; i++) {
@@ -293,6 +303,7 @@ public class Test extends JPanel {
         return image1;
     }
 
+    //fitness for the 1 algorithm (GeneticColours)
     private float Fitness(BufferedImage orig, Gene[] chromosomes) {
         BufferedImage iteration = ImageFromColorGenes(chromosomes);
         int width1 = iteration.getWidth();
@@ -314,38 +325,37 @@ public class Test extends JPanel {
         return fit;
     }
 
+    //fitness for the 2 algorithm (ColourEnhancement)
     private float Fitness(BufferedImage orig, BufferedImage background, Gene[] genome) {
         BufferedImage iteration = ImageFromColorEnhancement(genome, background);
         int squareSize = genome[0].x4 - genome[0].x1;
         float fitness = 0;
-        for (int i=0; i<genome.length; i++) {
-            float fit=0;
+        for (int i = 0; i < genome.length; i++) {
+            float fit = 0;
             for (int x1 = genome[i].x1; x1 < genome[i].x4; x1++) {
-                for (int y1 = genome[i].y1; y1 <genome[i].y4; y1++) {
+                for (int y1 = genome[i].y1; y1 < genome[i].y4; y1++) {
                     Color origin = new Color(orig.getRGB(x1, y1));
                     Color back = new Color(iteration.getRGB(x1, y1));
-                    float red_or_per = (float)origin.getRed() / 255;
-                    float green_or_per = (float)origin.getGreen() / 255;
-                    float blue_or_per = (float)origin.getBlue() / 255;
-                    float red_back_per = (float)back.getRed() / 255;
-                    float green_back_per = (float)back.getGreen() / 255;
-                    float blue_back_per = (float)back.getBlue() / 255;
+                    float red_or_per = (float) origin.getRed() / 255;
+                    float green_or_per = (float) origin.getGreen() / 255;
+                    float blue_or_per = (float) origin.getBlue() / 255;
+                    float red_back_per = (float) back.getRed() / 255;
+                    float green_back_per = (float) back.getGreen() / 255;
+                    float blue_back_per = (float) back.getBlue() / 255;
                     float orig_max = Math.max(blue_or_per, Math.max(red_or_per, green_or_per));
                     float back_max = Math.max(blue_back_per, Math.max(red_back_per, green_back_per));
-                    if ((red_or_per == orig_max) & (red_back_per == back_max)){
+                    if ((red_or_per == orig_max) & (red_back_per == back_max)) {
                         if (abs(origin.getRed() - back.getRed()) < 15) {
                             fit++;
-                        }} else if ((green_or_per == orig_max) & (green_back_per == back_max)) {
-                            if (abs(origin.getGreen() - back.getGreen()) < 15) {
-                                fit++;
-                            }
-                        } else if ((blue_or_per == orig_max) & (blue_back_per == back_max)) {
-                            if (abs(origin.getBlue() - back.getBlue()) < 15) {
-                                fit++;
-                            }
                         }
-                    if ((abs(origin.getRed() - origin.getGreen()) < 15) & (abs(origin.getRed() - origin.getBlue()) < 15)) {
-                        fit++;
+                    } else if ((green_or_per == orig_max) & (green_back_per == back_max)) {
+                        if (abs(origin.getGreen() - back.getGreen()) < 15) {
+                            fit++;
+                        }
+                    } else if ((blue_or_per == orig_max) & (blue_back_per == back_max)) {
+                        if (abs(origin.getBlue() - back.getBlue()) < 15) {
+                            fit++;
+                        }
                     }
                 }
             }
@@ -357,82 +367,81 @@ public class Test extends JPanel {
         return fitness;
     }
 
+    //obtains the set of new squares to match for the 2 algorithm: minimization
     private ArrayList<int[]> NewSquares(BufferedImage orig, BufferedImage background, Gene[] genome) {
         BufferedImage iteration = ImageFromColorEnhancement(genome, background);
         int squareSize = genome[0].x4 - genome[0].x1;
         float fitness = 0;
-        ArrayList<int[]> squares= new ArrayList<>();
-        for (int i=0; i<genome.length; i++) {
-            float fit=0;
+        ArrayList<int[]> squares = new ArrayList<>();
+        for (int i = 0; i < genome.length; i++) {
+            float fit = 0;
             for (int x1 = genome[i].x1; x1 < genome[i].x4; x1++) {
-                for (int y1 = genome[i].y1; y1 <genome[i].y4; y1++) {
+                for (int y1 = genome[i].y1; y1 < genome[i].y4; y1++) {
                     Color origin = new Color(orig.getRGB(x1, y1));
                     Color back = new Color(iteration.getRGB(x1, y1));
-                    float red_or_per = (float)origin.getRed() / 255;
-                    float green_or_per = (float)origin.getGreen() / 255;
-                    float blue_or_per = (float)origin.getBlue() / 255;
-                    float red_back_per = (float)back.getRed() / 255;
-                    float green_back_per = (float)back.getGreen() / 255;
-                    float blue_back_per = (float)back.getBlue() / 255;
+                    float red_or_per = (float) origin.getRed() / 255;
+                    float green_or_per = (float) origin.getGreen() / 255;
+                    float blue_or_per = (float) origin.getBlue() / 255;
+                    float red_back_per = (float) back.getRed() / 255;
+                    float green_back_per = (float) back.getGreen() / 255;
+                    float blue_back_per = (float) back.getBlue() / 255;
                     float orig_max = Math.max(blue_or_per, Math.max(red_or_per, green_or_per));
                     float back_max = Math.max(blue_back_per, Math.max(red_back_per, green_back_per));
-                    if ((red_or_per == orig_max) & (red_back_per == back_max)){
+                    if ((red_or_per == orig_max) & (red_back_per == back_max)) {
                         if (abs(origin.getRed() - back.getRed()) < 15) {
                             fit++;
                         }
-                        } else if ((green_or_per == orig_max) & (green_back_per == back_max)) {
-                            if (abs(origin.getGreen() - back.getGreen()) < 15) {
-                                fit++;
-                            }
-                        } else if ((blue_or_per == orig_max) & (blue_back_per == back_max)) {
-                            if (abs(origin.getBlue() - back.getBlue()) < 15) {
-                                fit++;
-                            }
+                    } else if ((green_or_per == orig_max) & (green_back_per == back_max)) {
+                        if (abs(origin.getGreen() - back.getGreen()) < 15) {
+                            fit++;
                         }
-                    if ((abs(origin.getRed() - origin.getGreen()) < 15) & (abs(origin.getRed() - origin.getBlue()) < 15)) {
-                        fit++;
+                    } else if ((blue_or_per == orig_max) & (blue_back_per == back_max)) {
+                        if (abs(origin.getBlue() - back.getBlue()) < 15) {
+                            fit++;
+                        }
                     }
                 }
             }
             fit = (100 * (fit / (squareSize * squareSize)));
             if (fit > 50) {
                 fitness++;
-            }
-            else{
+            } else {
                 int[] square = {genome[i].x1, genome[i].y1};
                 squares.add(square);
             }
         }
-        System.out.println("This fit: "+ fitness);
+        System.out.println("This fit: " + fitness);
         return squares;
     }
 
+    //returns the list of base colours of the image
     private ArrayList<ColorWithTimes> BaseColors(BufferedImage ColoredImage, int flag) {
 
         ArrayList<ColorWithTimes> ColoredList = new ArrayList<>();
         ArrayList<ColorWithTimes> BestColours = new ArrayList<>();
-        for (int i = 0; i < height; i+=3) {
-            for (int j = 0; j < width; j+=3) {
+        for (int i = 0; i < height; i += 3) {
+            for (int j = 0; j < width; j += 3) {
                 Color color = new Color(ColoredImage.getRGB(j, i));
                 float r_percent = 100 * color.getRed() / (float) 255;
                 float g_percent = 100 * color.getGreen() / (float) 255;
                 float b_percent = 100 * color.getBlue() / (float) 255;
-                if ((r_percent<15)||(g_percent<15)||(b_percent<15)||(r_percent>45)||(g_percent>45)||(b_percent>45))
-                ColoredList.add(new ColorWithTimes(color, 1));
+                if ((r_percent < 15) || (g_percent < 15) || (b_percent < 15) || (r_percent > 35) || (g_percent > 35) || (b_percent > 35))
+                    ColoredList.add(new ColorWithTimes(color, 1));
             }
         }
         for (int i = 0; i < ColoredList.size(); i++) {
-            float r_percent = 100 * (float)ColoredList.get(i).color.getRed() / 255;
-            float g_percent = 100 * (float)ColoredList.get(i).color.getGreen() / 255;
-            float b_percent = 100 * (float)ColoredList.get(i).color.getBlue() / 255;
+            float r_percent = 100 * (float) ColoredList.get(i).color.getRed() / 255;
+            float g_percent = 100 * (float) ColoredList.get(i).color.getGreen() / 255;
+            float b_percent = 100 * (float) ColoredList.get(i).color.getBlue() / 255;
             for (int j = i + 1; j < ColoredList.size() - i; j++) {
-                float r_percent_comp = 100 * (float)ColoredList.get(j).color.getRed() / 255;
-                float g_percent_comp = 100 * (float)ColoredList.get(j).color.getGreen() / 255;
-                float b_percent_comp = 100 * (float)ColoredList.get(j).color.getBlue() / 255;
+                float r_percent_comp = 100 * (float) ColoredList.get(j).color.getRed() / 255;
+                float g_percent_comp = 100 * (float) ColoredList.get(j).color.getGreen() / 255;
+                float b_percent_comp = 100 * (float) ColoredList.get(j).color.getBlue() / 255;
                 if ((abs(r_percent - r_percent_comp) < 12) && (abs(g_percent - g_percent_comp) < 12) && (abs(b_percent - b_percent_comp) < 12)) {
-                    ColoredList.get(i).frequency=ColoredList.get(i).frequency+1;
+                    ColoredList.get(i).frequency = ColoredList.get(i).frequency + 1;
                     float max_percent = MaxOf3(r_percent_comp, g_percent_comp, b_percent_comp);
-                    if ((((max_percent == r_percent_comp) & (r_percent_comp > r_percent)) || ((max_percent == g_percent_comp) & (g_percent_comp > g_percent)) || ((max_percent == b_percent_comp) & (b_percent_comp > b_percent)))&(max_percent>45)) {
+                    if ((((max_percent == r_percent_comp) & (r_percent_comp > r_percent)) || ((max_percent == g_percent_comp) & (g_percent_comp > g_percent))
+                            || ((max_percent == b_percent_comp) & (b_percent_comp > b_percent))) & (max_percent > 45)) {
                         Color color = ColoredList.get(j).color;
                         int frequency = ColoredList.get(i).frequency;
                         ColoredList.set(i, new ColorWithTimes(color, frequency));
@@ -469,7 +478,7 @@ public class Test extends JPanel {
         }
     }
 
-    //makes big picture from color1_genome
+    //makes big picture from color1_genome for 1 algorithm
     private BufferedImage BigImageFromColorGenes(Gene[] chromosomes, Color FirstColor) {
         BufferedImage image1 = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         for (int i = 0; i < width; i++) {
@@ -485,18 +494,18 @@ public class Test extends JPanel {
             g.drawPolygon(xArr, yArr, 4);
             g.fillPolygon(xArr, yArr, 4);
         }
-            try {
-                File output = new File("GeneticColours.jpg");
-                ImageIO.write(image1, "jpg", output);
-            } catch (Exception e) {
-                System.out.println("Troubles with picture saving.");
-            }
-            try {
-                File output = new File("ColoursEnhancement.jpg");
-                ImageIO.write(image1, "jpg", output);
-            } catch (Exception e) {
-                System.out.println("Troubles with picture saving.");
-            }
+        try {
+            File output = new File("GeneticColours.jpg");
+            ImageIO.write(image1, "jpg", output);
+        } catch (Exception e) {
+            System.out.println("Troubles with picture saving.");
+        }
+        try {
+            File output = new File("ColoursEnhancement.jpg");
+            ImageIO.write(image1, "jpg", output);
+        } catch (Exception e) {
+            System.out.println("Troubles with picture saving.");
+        }
 
         g.dispose();
         return image1;
@@ -659,7 +668,7 @@ public class Test extends JPanel {
         return chromosomes;
     }
 
-
+    //1 algorithm crossover
     private Compliance[] Crossover(Compliance parent1, Compliance parent2, BufferedImage orig) {
         Compliance[] children = new Compliance[2];
         children[0] = new Compliance(new Gene[parent1.chromosome.length], 0);
@@ -679,6 +688,7 @@ public class Test extends JPanel {
         children[1].fitness = Fitness(orig, children[1].chromosome);
         return children;
     }
+    //2 algorithm crossover
     private Compliance[] Crossover(Compliance parent1, Compliance parent2, BufferedImage orig, BufferedImage Background) {
         Compliance[] children = new Compliance[2];
         children[0] = new Compliance(new Gene[parent1.chromosome.length], 0);
@@ -698,7 +708,7 @@ public class Test extends JPanel {
         children[1].fitness = Fitness(orig, Background, children[1].chromosome);
         return children;
     }
-
+    //1 algorithm mutation
     private Compliance Mutation(Compliance orig, ArrayList<Color> BaseColors, BufferedImage original) {
         Random rand = new Random();
         int quarter = rand.nextInt(12);
@@ -800,25 +810,25 @@ public class Test extends JPanel {
         Compliance result = new Compliance(genome, Fitness(original, orig.chromosome));
         return result;
     }
-
+    //2 algorithm mutation
     private Compliance Mutation(Compliance orig, ArrayList<ColorWithTimes> AllColors, BufferedImage original, BufferedImage background) {
         Random rand = new Random();
         int times = 1 + rand.nextInt(orig.chromosome.length - 1);
         Gene[] genome = new Gene[orig.chromosome.length];
         int frequencySum = 0;
-        for (int i=0; i<AllColors.size(); i++){
-            frequencySum = frequencySum+AllColors.get(i).frequency;
+        for (int i = 0; i < AllColors.size(); i++) {
+            frequencySum = frequencySum + AllColors.get(i).frequency;
         }
         for (int k = 0; k < times; k++) {
             int alpha = 100 + rand.nextInt(155);
             int index = rand.nextInt(orig.chromosome.length);
             int randomIndex = rand.nextInt(frequencySum);
-            Color buff=AllColors.get(0).color;
-            frequencySum=0;
-            for (int j=0; j<AllColors.size(); j++){
-                if (randomIndex>=frequencySum) {
+            Color buff = AllColors.get(0).color;
+            frequencySum = 0;
+            for (int j = 0; j < AllColors.size(); j++) {
+                if (randomIndex >= frequencySum) {
                     frequencySum = frequencySum + AllColors.get(j).frequency;
-                    if (randomIndex<frequencySum){
+                    if (randomIndex < frequencySum) {
                         buff = AllColors.get(j).color;
                         break;
                     }
@@ -834,7 +844,7 @@ public class Test extends JPanel {
         Compliance result = new Compliance(genome, Fitness(original, background, orig.chromosome));
         return result;
     }
-
+    //Sorter for selection, sorts after selection is made
     private Compliance[] Sorter(Compliance[] selection) {
         Compliance[] Unsorted = new Compliance[selection.length];
         for (int i = 0; i < selection.length; i++) {
@@ -851,7 +861,7 @@ public class Test extends JPanel {
         }
         return Unsorted;
     }
-
+    //shuffle for selection, shuffles before selection is done
     private Compliance[] Shuffle(Compliance[] selection) {
         Random rand = new Random();
         Compliance[] shuffle = new Compliance[selection.length];
@@ -868,7 +878,7 @@ public class Test extends JPanel {
         }
         return shuffle;
     }
-
+    //1st algorithm selection
     private Compliance[] Selection(Compliance[] population, BufferedImage orig, ArrayList<Color> BaseColors, Executor exec) {
         CompletionService<Compliance[]> completionService = new ExecutorCompletionService<Compliance[]>(exec);
         population = Shuffle(population);
@@ -918,7 +928,7 @@ public class Test extends JPanel {
         new_population = Sorter(new_population);
         return new_population;
     }
-
+    //2nd algorithm selection
     private Compliance[] Selection(Compliance[] population, BufferedImage orig, ArrayList<ColorWithTimes> AllColors, Executor exec, BufferedImage Background) {
         CompletionService<Compliance[]> completionService = new ExecutorCompletionService<Compliance[]>(exec);
         population = Shuffle(population);
@@ -953,7 +963,7 @@ public class Test extends JPanel {
         new_population = Sorter(new_population);
         return new_population;
     }
-
+    //flood for  1st algorithm
     private Compliance[] Flood(Compliance[] population, ArrayList<Color> BaseColors, BufferedImage origin) {
         Compliance[] new_species = new Compliance[population.length];
         /*for (int i = 0; i < population.length; i++) {
@@ -975,24 +985,24 @@ public class Test extends JPanel {
         }
         return new_species;
     }
+    //decreasing search space for 2nd algorithm
+    private Compliance[] MinimizingSquares(Gene[] Best, ArrayList<ColorWithTimes> AllColors, BufferedImage origin, BufferedImage Background, int population_size, int squares, int k) {
 
-    private Compliance[] MinimizingSquares(Gene[] Best, ArrayList<ColorWithTimes> AllColors, BufferedImage origin, BufferedImage Background, int population_size, int squares, int k){
-
-        int squareSize= width/squares;
+        int squareSize = width / squares;
         float fit = Fitness(origin, Background, Best);
         ArrayList<int[]> areas = NewSquares(origin, Background, Best);
         int flag = 0;
-        Gene[] whatToDraw = new Gene[Best.length-areas.size()];
+        Gene[] whatToDraw = new Gene[Best.length - areas.size()];
         System.out.println(whatToDraw.length);
         int index = 0;
-        for (int i=0; i<Best.length; i++){
-            for (int j=0; j<areas.size(); j++){
-                if ((Best[i].x1==areas.get(j)[0])&(Best[i].y1==areas.get(j)[1])){
-                    flag=1;
+        for (int i = 0; i < Best.length; i++) {
+            for (int j = 0; j < areas.size(); j++) {
+                if ((Best[i].x1 == areas.get(j)[0]) & (Best[i].y1 == areas.get(j)[1])) {
+                    flag = 1;
                 }
             }
-            if (flag==0){
-                whatToDraw[index]=Best[i];
+            if (flag == 0) {
+                whatToDraw[index] = Best[i];
                 index++;
             }
             flag = 0;
@@ -1006,7 +1016,7 @@ public class Test extends JPanel {
         } catch (Exception e) {
             System.out.println("Troubles with picture saving.");
         }
-        String name = ("Enhancement".concat( Integer.toString(k))).concat(".jpg");
+        String name = ("Enhancement".concat(Integer.toString(k))).concat(".jpg");
         try {
             File output = new File(name);
             ImageIO.write(enhanceImage, "jpg", output);
@@ -1021,7 +1031,7 @@ public class Test extends JPanel {
         }
         return population;
     }
-
+    //1st algorithm
     private Gene[] GeneticColours(BufferedImage origin, ArrayList<Color> BaseColors) {
         Executor executor = Executors.newFixedThreadPool(8);
         int size = 84;
@@ -1043,9 +1053,9 @@ public class Test extends JPanel {
                 System.out.println(i + " best population number");
             }
             i++;
-            if ((i%200==0)){
+            if ((i % 50 == 0)&(sameFit<50)) {
                 BufferedImage colored = BigImageFromColorGenes(Best.chromosome, BaseColors.get(0));
-                String name = ("Color".concat( Integer.toString(i))).concat(".jpg");
+                String name = ("Color".concat(Integer.toString(i))).concat(".jpg");
                 try {
                     File output = new File(name);
                     ImageIO.write(colored, "jpg", output);
@@ -1077,101 +1087,105 @@ public class Test extends JPanel {
         return Best.chromosome;
     }
 
-    private ArrayList<GrayGene> RandomGenes (int squares){
+    //3rd algorithm start
+    //random genes
+    private ArrayList<GrayGene> RandomGenes(int squares) {
         Random rand = new Random();
         ArrayList<GrayGene> genome = new ArrayList<>();
-        int squareSize = width/squares;
-        for (int i=0; i<width; i+= squareSize){
-            for (int j=0; j<height; j+=squareSize){
+        int squareSize = width / squares;
+        for (int i = 0; i < width; i += squareSize) {
+            for (int j = 0; j < height; j += squareSize) {
                 int col = rand.nextInt(256);
-                char c = (char)(rand.nextInt(26) + 'a');
+                char c = (char) (rand.nextInt(26) + 'a');
                 genome.add(new GrayGene(i, j, c, new Color(col, col, col)));
             }
         }
         return genome;
     }
-    private BufferedImage GrayImage (ArrayList<GrayGene> genome){
+    //makes the image out of genome
+    private BufferedImage GrayImage(ArrayList<GrayGene> genome) {
         BufferedImage result = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-        for (int i=0; i<width; i++){
-            for (int j=0; j<height; j++){
+        for (int i = 0; i < width; i++) {
+            for (int j = 0; j < height; j++) {
                 result.setRGB(i, j, (new Color(85, 85, 85)).getRGB());
             }
         }
-        int squareSize = genome.get(1).y1-genome.get(0).y1;
+        int squareSize = genome.get(1).y1 - genome.get(0).y1;
         Graphics g = result.getGraphics();
-        for (int i=0; i<genome.size(); i++){
+        for (int i = 0; i < genome.size(); i++) {
             g.setColor(genome.get(i).color);
             String str = Character.toString(genome.get(i).symb);
-            g.drawString(str, genome.get(i).x1+squareSize/2, genome.get(i).y1+squareSize/2);
+            g.drawString(str, genome.get(i).x1 + squareSize / 2, genome.get(i).y1 + squareSize / 2);
         }
         g.dispose();
         return result;
     }
-
-    private int GrayFitness (BufferedImage origin, ArrayList<GrayGene> genome, int squares){
-        int squareSize = width/squares;
-        int fitness=0;
-        int averageTone=0;
+    //fitness for 3rd alg
+    private int GrayFitness(BufferedImage origin, ArrayList<GrayGene> genome, int squares) {
+        int squareSize = width / squares;
+        int fitness = 0;
+        int averageTone = 0;
         int number = 0;
-        for (int i=0; i<genome.size(); i++){
-                for (int x=genome.get(i).x1; x<genome.get(i).x1+squareSize; x++) {
-                    for (int y=genome.get(i).y1; y<genome.get(i).y1+squareSize; y++)
-                        if ((x<width)&(y<height)) {
-                            number++;
-                            averageTone = averageTone + new Color(origin.getRGB(x, y)).getBlue();
-                        }
-                }
-                averageTone = (int)((float)averageTone / number);
-                number = 0;
-                if (abs(genome.get(i).color.getRed()-averageTone)<10){
-                    fitness++;
-                    genome.get(i).matched=true;
-                }
-                averageTone=0;
+        for (int i = 0; i < genome.size(); i++) {
+            for (int x = genome.get(i).x1; x < genome.get(i).x1 + squareSize; x++) {
+                for (int y = genome.get(i).y1; y < genome.get(i).y1 + squareSize; y++)
+                    if ((x < width) & (y < height)) {
+                        number++;
+                        averageTone = averageTone + new Color(origin.getRGB(x, y)).getBlue();
+                    }
+            }
+            averageTone = (int) ((float) averageTone / number);
+            number = 0;
+            if (abs(genome.get(i).color.getRed() - averageTone) < 10) {
+                fitness++;
+                genome.get(i).matched = true;
+            }
+            averageTone = 0;
         }
         return fitness;
     }
-
+    //crossover for 3rd alg
     private GraySpecie[] GrayCrossover(GraySpecie parent1, GraySpecie parent2, BufferedImage origin, int squares) {
         GraySpecie[] Children = new GraySpecie[2];
         ArrayList<GrayGene> Child1 = new ArrayList<>();
         ArrayList<GrayGene> Child2 = new ArrayList<>();
         Random rand = new Random();
-        for (int i=0; i<parent1.genome.size(); i++){
+        for (int i = 0; i < parent1.genome.size(); i++) {
             int Choice = rand.nextInt(2);
-            if (Choice==0){
+            if (Choice == 0) {
                 Child1.add(new GrayGene(parent1.genome.get(i)));
                 Child2.add(new GrayGene(parent2.genome.get(i)));
-            }
-            else{
+            } else {
                 Child1.add(new GrayGene(parent2.genome.get(i)));
                 Child2.add(new GrayGene(parent1.genome.get(i)));
             }
         }
-        Children[0]=new GraySpecie(Child1, GrayFitness(origin, Child1, squares));
-        Children[1]=new GraySpecie(Child2, GrayFitness(origin, Child2, squares));
+        Children[0] = new GraySpecie(Child1, GrayFitness(origin, Child1, squares));
+        Children[1] = new GraySpecie(Child2, GrayFitness(origin, Child2, squares));
 
         return Children;
     }
+    //mutation for 3rd alg
     private GraySpecie GrayMutation(GraySpecie prototype, BufferedImage origin, int squares) {
         ArrayList<GrayGene> newGenome = new ArrayList<>();
-        for (int j=0; j<prototype.genome.size();j++) {
+        for (int j = 0; j < prototype.genome.size(); j++) {
             newGenome.add(new GrayGene(prototype.genome.get(j)));
         }
         Random rand = new Random();
-        int number = 1+rand.nextInt(3);
+        int number = 1 + rand.nextInt(3);
         int index = rand.nextInt(prototype.genome.size());
-        for (int i=0; i<number; i++){
-            while(prototype.genome.get(index).matched) {
+        for (int i = 0; i < number; i++) {
+            while (prototype.genome.get(index).matched) {
                 index = rand.nextInt(prototype.genome.size());
             }
             int col = rand.nextInt(256);
-            char c = (char)(rand.nextInt(26) + 'a');
+            char c = (char) (rand.nextInt(26) + 'a');
             newGenome.set(index, new GrayGene(prototype.genome.get(index).x1, prototype.genome.get(index).y1, c, new Color(col, col, col)));
         }
         GraySpecie Mutant = new GraySpecie(newGenome, GrayFitness(origin, newGenome, squares));
         return Mutant;
     }
+    //shuffle for graySelection
     private GraySpecie[] GrayShuffle(GraySpecie[] selection) {
         Random rand = new Random();
         GraySpecie[] shuffle = new GraySpecie[selection.length];
@@ -1188,7 +1202,7 @@ public class Test extends JPanel {
         }
         return shuffle;
     }
-
+    //sorter for graySelection
     private GraySpecie[] GraySorter(GraySpecie[] selection) {
         GraySpecie[] Sorted = new GraySpecie[selection.length];
         for (int i = 0; i < selection.length; i++) {
@@ -1206,7 +1220,7 @@ public class Test extends JPanel {
         return Sorted;
     }
 
-
+    //Selection fr the 3rd alg
     private GraySpecie[] GraySelection(GraySpecie[] population, BufferedImage orig, int squares, Executor exec) {
         CompletionService<GraySpecie[]> completionService = new ExecutorCompletionService<GraySpecie[]>(exec);
         population = GrayShuffle(population);
@@ -1256,7 +1270,7 @@ public class Test extends JPanel {
         new_population = GraySorter(new_population);
         return new_population;
     }
-
+    //third algorithm
     private ArrayList<GrayGene> GeneticShadows(BufferedImage origin, int squares) {
         Executor executor = Executors.newFixedThreadPool(8);
         GraySpecie[] population = new GraySpecie[56];
@@ -1289,19 +1303,21 @@ public class Test extends JPanel {
             } else {
                 fit_prev = Best.fitness;
                 sameFit = 0;
-                if (Best.fitness==Best.genome.size()/10){
-                    BufferedImage gray = GrayImage(Best.genome);
-                    String name = ("Gray".concat( Integer.toString(i))).concat(".jpg");
-                    try {
-                        File output = new File(name);
-                        ImageIO.write(gray, "jpg", output);
-                    } catch (Exception e) {
-                        System.out.println("Troubles with picture saving.");
-                    }
+
+            }
+            if (i % 500 == 0) {
+                BufferedImage gray = GrayImage(Best.genome);
+                String name = ("Gray".concat(Integer.toString(i))).concat(".jpg");
+                try {
+                    File output = new File(name);
+                    ImageIO.write(gray, "jpg", output);
+                } catch (Exception e) {
+                    System.out.println("Troubles with picture saving.");
                 }
             }
             if (i % 10 == 0)
-                System.out.println("Iteration num: " + i + " Fit: " + Best.fitness + " from "+ Best.genome.size());
+                System.out.println("Iteration num: " + i + " Fit: " + Best.fitness + " from " + Best.genome.size());
+
         }
 
 
@@ -1316,7 +1332,7 @@ public class Test extends JPanel {
         return Best.genome;
     }
 
-
+    //black squares image for 2nd alg check
     private BufferedImage Squares(BufferedImage Background, ArrayList<int[]> squares, int squaresInLine) {
         for (int i = 0; i < squares.size(); i++) {
             //System.out.println("x: "+squares.get(i)[0]+" y: "+squares.get(i)[1]);
@@ -1339,7 +1355,7 @@ public class Test extends JPanel {
         }
         return image1;
     }
-
+    //determining what squares need to be improved, 2nd alg
     private ArrayList<int[]> AreasToEnhance(BufferedImage origin, BufferedImage Background, int squaresInLine) {
         ArrayList<int[]> result = new ArrayList<>();
         int squareSize = width / squaresInLine;
@@ -1350,29 +1366,26 @@ public class Test extends JPanel {
                     for (int y1 = y; y1 < y + squareSize; y1++) {
                         Color orig = new Color(origin.getRGB(x1, y1));
                         Color back = new Color(Background.getRGB(x1, y1));
-                        float red_or_per = (float)orig.getRed() / 255;
-                        float green_or_per = (float)orig.getGreen() / 255;
-                        float blue_or_per = (float)orig.getBlue() / 255;
-                        float red_back_per = (float)back.getRed() / 255;
-                        float green_back_per = (float)back.getGreen() / 255;
-                        float blue_back_per = (float)back.getBlue() / 255;
+                        float red_or_per = (float) orig.getRed() / 255;
+                        float green_or_per = (float) orig.getGreen() / 255;
+                        float blue_or_per = (float) orig.getBlue() / 255;
+                        float red_back_per = (float) back.getRed() / 255;
+                        float green_back_per = (float) back.getGreen() / 255;
+                        float blue_back_per = (float) back.getBlue() / 255;
                         float orig_max = Math.max(blue_or_per, Math.max(red_or_per, green_or_per));
                         float back_max = Math.max(blue_back_per, Math.max(red_back_per, green_back_per));
-                        if ((red_or_per == orig_max) & (red_back_per == back_max)){
+                        if ((red_or_per == orig_max) & (red_back_per == back_max)) {
                             if (abs(orig.getRed() - back.getRed()) < 15) {
                                 fit++;
                             }
-                            } else if ((green_or_per == orig_max) & (green_back_per == back_max)) {
-                                if (abs(orig.getGreen() - back.getGreen()) < 15) {
-                                    fit++;
-                                }
-                            } else if ((blue_or_per == orig_max) & (blue_back_per == back_max)) {
-                                if (abs(orig.getBlue() - back.getBlue()) < 15) {
-                                    fit++;
-                                }
+                        } else if ((green_or_per == orig_max) & (green_back_per == back_max)) {
+                            if (abs(orig.getGreen() - back.getGreen()) < 15) {
+                                fit++;
                             }
-                        if ((abs(orig.getRed() - orig.getGreen()) < 15) & (abs(orig.getRed() - orig.getBlue()) < 15)) {
-                            fit++;
+                        } else if ((blue_or_per == orig_max) & (blue_back_per == back_max)) {
+                            if (abs(orig.getBlue() - back.getBlue()) < 15) {
+                                fit++;
+                            }
                         }
                     }
                 }
@@ -1385,7 +1398,7 @@ public class Test extends JPanel {
         }
         return result;
     }
-
+    //image from the second algorithm
     private BufferedImage ImageFromColorEnhancement(Gene[] genome, BufferedImage background) {
         BufferedImage image1 = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         for (int i = 0; i < width; i++) {
@@ -1404,22 +1417,22 @@ public class Test extends JPanel {
         g.dispose();
         return image1;
     }
-
+    //random genes for 2nd algorithm
     private Gene[] AllColorsImage(ArrayList<ColorWithTimes> AllColors, int squareSize, ArrayList<int[]> squares) {
         Gene[] genome = new Gene[squares.size()];
         Random rand = new Random();
         int frequencySum = 0;
-        for (int i=0; i<AllColors.size(); i++){
-            frequencySum = frequencySum+AllColors.get(i).frequency;
+        for (int i = 0; i < AllColors.size(); i++) {
+            frequencySum = frequencySum + AllColors.get(i).frequency;
         }
         for (int i = 0; i < squares.size(); i++) {
             int randomIndex = rand.nextInt(frequencySum);
             int alpha = 100 + rand.nextInt(155);
-            Color buff=AllColors.get(0).color;
-            int sum=0;
-            for (int j=0; j<AllColors.size(); j++){
-                sum= sum+AllColors.get(j).frequency;
-                if (sum> randomIndex){
+            Color buff = AllColors.get(0).color;
+            int sum = 0;
+            for (int j = 0; j < AllColors.size(); j++) {
+                sum = sum + AllColors.get(j).frequency;
+                if (sum > randomIndex) {
                     buff = AllColors.get(j).color;
                     break;
                 }
@@ -1429,7 +1442,7 @@ public class Test extends JPanel {
         }
         return genome;
     }
-
+    //2nd algorithm
     private Gene[] ColoursEnhancement(BufferedImage origin, ArrayList<ColorWithTimes> AllColors, BufferedImage Background) {
         int squaresInLine = 64;
         int squareSize = width / squaresInLine;
@@ -1453,15 +1466,15 @@ public class Test extends JPanel {
                 Best = new_population[0];
                 System.out.println(i + " new best specie");
                 float fit = Fitness(origin, Background, new_population[0].chromosome);
-                System.out.println("Max fit: "+ fit);
+                System.out.println("Max fit: " + fit);
             }
             i++;
             if (i % 25 == 0) {
-                new_population = MinimizingSquares(new_population[0].chromosome, AllColors, origin, Background,56, squaresInLine, i);
+                new_population = MinimizingSquares(new_population[0].chromosome, AllColors, origin, Background, 56, squaresInLine, i);
                 System.out.println(new_population[0].chromosome.length);
                 Best = new_population[0];
-                fit_prev=Best.fitness;
-                Background=coloredImageSmall;
+                fit_prev = Best.fitness;
+                Background = coloredImageSmall;
 
                 System.out.println("Minimization happened.");
 
@@ -1469,7 +1482,7 @@ public class Test extends JPanel {
             if (Best.fitness == fit_prev) {
                 sameFit++;
 
-                if (sameFit % 25==0) {
+                if (sameFit % 25 == 0) {
                     break;
                 }
             } else {
@@ -1477,20 +1490,20 @@ public class Test extends JPanel {
                 sameFit = 0;
             }
             if (i % 10 == 0)
-                System.out.println("Iteration num: " + i + " Fit: " + Best.fitness + " of "+ new_population[0].chromosome.length);
+                System.out.println("Iteration num: " + i + " Fit: " + Best.fitness + " of " + new_population[0].chromosome.length);
         }
         ArrayList<int[]> areas = NewSquares(origin, Background, Best.chromosome);
         int flag = 0;
-        Gene[] whatToDraw = new Gene[Best.chromosome.length-areas.size()];
+        Gene[] whatToDraw = new Gene[Best.chromosome.length - areas.size()];
         int index = 0;
-        for (int f=0; f<Best.chromosome.length; f++){
-            for (int j=0; j<areas.size(); j++){
-                if ((Best.chromosome[f].x1==areas.get(j)[0])&(Best.chromosome[f].y1==areas.get(j)[1])){
-                    flag=1;
+        for (int f = 0; f < Best.chromosome.length; f++) {
+            for (int j = 0; j < areas.size(); j++) {
+                if ((Best.chromosome[f].x1 == areas.get(j)[0]) & (Best.chromosome[f].y1 == areas.get(j)[1])) {
+                    flag = 1;
                 }
             }
-            if (flag==0){
-                whatToDraw[index]=Best.chromosome[f];
+            if (flag == 0) {
+                whatToDraw[index] = Best.chromosome[f];
                 index++;
             }
             flag = 0;
