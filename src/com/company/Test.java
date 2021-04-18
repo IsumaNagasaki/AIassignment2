@@ -1,5 +1,7 @@
 package com.company;
 
+import org.w3c.dom.ls.LSOutput;
+
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
@@ -49,13 +51,13 @@ public class Test extends JPanel {
 
         ArrayList<Color> Base = new ArrayList<>();
         for (int i = 0; i< ColoredList.size(); i++){
+            if(i<4)
             Base.add(ColoredList.get(i).color);
         }
 
-        //Gene[] genes = BigColoursImage(Base, 50);
-        //Gene[] bestOf = GeneticColours(Small, Base);
-        //BufferedImage haha = ImageFromColorGenes(bestOf, Base.get(0));
-        //BufferedImage coloredImageBig = BigImageFromColorGenes(bestOf, Base.get(0));
+        Gene[] bestOf = GeneticColours(Small, Base);
+        BufferedImage coloredImageBig = BigImageFromColorGenes(bestOf, Base.get(0));
+
 
 
         try {
@@ -95,20 +97,26 @@ public class Test extends JPanel {
 
         Gene[] colorEnhance = ColoursEnhancement(colourScale, ColoredList, coloredImageBig);
         BufferedImage enhanceImage = ImageFromColorEnhancement(colorEnhance, coloredImageSmall);
-        ArrayList<int[]> squares = AreasToEnhance(colourScale, coloredImageBig, 64);
-        BufferedImage Black = Squares(coloredImageBig, squares, 64);
+
+        System.out.println("Starting...");
+        ArrayList<GrayGene> GrayGenome = GeneticShadows(img2, 80);
+        BufferedImage GrayOne = GrayImage(GrayGenome);
+        Image result = Recombination(GrayOne, enhanceImage);
 
 
+        //g.drawImage(Small, 140, 20, this);
+        //g.drawImage(he, 140 + (width / 3), 20, this);
+        g.drawImage(image, 140, 20, this);
 
-        g.drawImage(Small, 140, 20, this);
-        g.drawImage(he, 140 + (width / 3), 20, this);
-        //g.drawImage(haha, 140, 20 + (width / 3), this);
         g.drawImage(enhanceImage, 652, 20, this);
-        //g.drawImage(whatToImprove, 652, 20, this);
+        //g.drawImage(GrayImageBig, 652, 20, this);
+
         //g.drawImage(img4, 652, 20, this);
         //g.drawImage(img2, 140, 532, this);
-        g.drawImage(coloredImageBig, 140, 532, this);
-        g.drawImage(img3, 652, 532, this);
+        //g.drawImage(enhanceImage, 140, 532, this);
+        g.drawImage(GrayOne, 140, 532, this);
+        g.drawImage(result, 652, 532, this);
+
         //g.drawImage(img, 1164, 20, this);
     }
 
@@ -477,18 +485,18 @@ public class Test extends JPanel {
             g.drawPolygon(xArr, yArr, 4);
             g.fillPolygon(xArr, yArr, 4);
         }
-        try {
-            File output = new File("GeneticColours.jpg");
-            ImageIO.write(image1, "jpg", output);
-        } catch (Exception e) {
-            System.out.println("Troubles with picture saving.");
-        }
-        try {
-            File output = new File("ColoursEnhancement.jpg");
-            ImageIO.write(image1, "jpg", output);
-        } catch (Exception e) {
-            System.out.println("Troubles with picture saving.");
-        }
+            try {
+                File output = new File("GeneticColours.jpg");
+                ImageIO.write(image1, "jpg", output);
+            } catch (Exception e) {
+                System.out.println("Troubles with picture saving.");
+            }
+            try {
+                File output = new File("ColoursEnhancement.jpg");
+                ImageIO.write(image1, "jpg", output);
+            } catch (Exception e) {
+                System.out.println("Troubles with picture saving.");
+            }
 
         g.dispose();
         return image1;
@@ -975,9 +983,6 @@ public class Test extends JPanel {
         ArrayList<int[]> areas = NewSquares(origin, Background, Best);
         int flag = 0;
         Gene[] whatToDraw = new Gene[Best.length-areas.size()];
-        System.out.println("Prev length: "+Best.length);
-        System.out.println("New_length: "+areas.size());
-        System.out.println("Fitness: "+fit);
         System.out.println(whatToDraw.length);
         int index = 0;
         for (int i=0; i<Best.length; i++){
@@ -1016,6 +1021,7 @@ public class Test extends JPanel {
         }
         return population;
     }
+
     private Gene[] GeneticColours(BufferedImage origin, ArrayList<Color> BaseColors) {
         Executor executor = Executors.newFixedThreadPool(8);
         int size = 84;
@@ -1037,6 +1043,17 @@ public class Test extends JPanel {
                 System.out.println(i + " best population number");
             }
             i++;
+            if ((i%200==0)){
+                BufferedImage colored = BigImageFromColorGenes(Best.chromosome, BaseColors.get(0));
+                String name = ("Color".concat( Integer.toString(i))).concat(".jpg");
+                try {
+                    File output = new File(name);
+                    ImageIO.write(colored, "jpg", output);
+                } catch (Exception e) {
+                    System.out.println("Troubles with picture saving.");
+                }
+
+            }
             if (Best.fitness == fit_prev) {
                 sameFit++;
                 if (sameFit % 60 == 0) {
@@ -1049,6 +1066,7 @@ public class Test extends JPanel {
             } else {
                 fit_prev = Best.fitness;
                 sameFit = 0;
+
             }
             if (i % 10 == 0)
                 System.out.println("Iteration num: " + i + " Fit: " + Best.fitness);
@@ -1058,6 +1076,246 @@ public class Test extends JPanel {
         System.out.println(Best.fitness);
         return Best.chromosome;
     }
+
+    private ArrayList<GrayGene> RandomGenes (int squares){
+        Random rand = new Random();
+        ArrayList<GrayGene> genome = new ArrayList<>();
+        int squareSize = width/squares;
+        for (int i=0; i<width; i+= squareSize){
+            for (int j=0; j<height; j+=squareSize){
+                int col = rand.nextInt(256);
+                char c = (char)(rand.nextInt(26) + 'a');
+                genome.add(new GrayGene(i, j, c, new Color(col, col, col)));
+            }
+        }
+        return genome;
+    }
+    private BufferedImage GrayImage (ArrayList<GrayGene> genome){
+        BufferedImage result = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        for (int i=0; i<width; i++){
+            for (int j=0; j<height; j++){
+                result.setRGB(i, j, (new Color(85, 85, 85)).getRGB());
+            }
+        }
+        int squareSize = genome.get(1).y1-genome.get(0).y1;
+        Graphics g = result.getGraphics();
+        for (int i=0; i<genome.size(); i++){
+            g.setColor(genome.get(i).color);
+            String str = Character.toString(genome.get(i).symb);
+            g.drawString(str, genome.get(i).x1+squareSize/2, genome.get(i).y1+squareSize/2);
+        }
+        g.dispose();
+        return result;
+    }
+
+    private int GrayFitness (BufferedImage origin, ArrayList<GrayGene> genome, int squares){
+        int squareSize = width/squares;
+        int fitness=0;
+        int averageTone=0;
+        int number = 0;
+        for (int i=0; i<genome.size(); i++){
+                for (int x=genome.get(i).x1; x<genome.get(i).x1+squareSize; x++) {
+                    for (int y=genome.get(i).y1; y<genome.get(i).y1+squareSize; y++)
+                        if ((x<width)&(y<height)) {
+                            number++;
+                            averageTone = averageTone + new Color(origin.getRGB(x, y)).getBlue();
+                        }
+                }
+                averageTone = (int)((float)averageTone / number);
+                number = 0;
+                if (abs(genome.get(i).color.getRed()-averageTone)<10){
+                    fitness++;
+                    genome.get(i).matched=true;
+                }
+                averageTone=0;
+        }
+        return fitness;
+    }
+
+    private GraySpecie[] GrayCrossover(GraySpecie parent1, GraySpecie parent2, BufferedImage origin, int squares) {
+        GraySpecie[] Children = new GraySpecie[2];
+        ArrayList<GrayGene> Child1 = new ArrayList<>();
+        ArrayList<GrayGene> Child2 = new ArrayList<>();
+        Random rand = new Random();
+        for (int i=0; i<parent1.genome.size(); i++){
+            int Choice = rand.nextInt(2);
+            if (Choice==0){
+                Child1.add(new GrayGene(parent1.genome.get(i)));
+                Child2.add(new GrayGene(parent2.genome.get(i)));
+            }
+            else{
+                Child1.add(new GrayGene(parent2.genome.get(i)));
+                Child2.add(new GrayGene(parent1.genome.get(i)));
+            }
+        }
+        Children[0]=new GraySpecie(Child1, GrayFitness(origin, Child1, squares));
+        Children[1]=new GraySpecie(Child2, GrayFitness(origin, Child2, squares));
+
+        return Children;
+    }
+    private GraySpecie GrayMutation(GraySpecie prototype, BufferedImage origin, int squares) {
+        ArrayList<GrayGene> newGenome = new ArrayList<>();
+        for (int j=0; j<prototype.genome.size();j++) {
+            newGenome.add(new GrayGene(prototype.genome.get(j)));
+        }
+        Random rand = new Random();
+        int number = 1+rand.nextInt(3);
+        int index = rand.nextInt(prototype.genome.size());
+        for (int i=0; i<number; i++){
+            while(prototype.genome.get(index).matched) {
+                index = rand.nextInt(prototype.genome.size());
+            }
+            int col = rand.nextInt(256);
+            char c = (char)(rand.nextInt(26) + 'a');
+            newGenome.set(index, new GrayGene(prototype.genome.get(index).x1, prototype.genome.get(index).y1, c, new Color(col, col, col)));
+        }
+        GraySpecie Mutant = new GraySpecie(newGenome, GrayFitness(origin, newGenome, squares));
+        return Mutant;
+    }
+    private GraySpecie[] GrayShuffle(GraySpecie[] selection) {
+        Random rand = new Random();
+        GraySpecie[] shuffle = new GraySpecie[selection.length];
+        for (int i = 0; i < selection.length; i++) {
+            shuffle[i] = new GraySpecie(selection[i].genome, selection[i].fitness);
+        }
+        for (int i = 0; i < selection.length; i++) {
+            int index = i + rand.nextInt(selection.length - i + 15);
+            if (index < selection.length) {
+                GraySpecie buff = new GraySpecie(shuffle[i].genome, shuffle[i].fitness);
+                shuffle[i] = new GraySpecie(shuffle[index].genome, shuffle[index].fitness);
+                shuffle[index] = new GraySpecie(buff.genome, buff.fitness);
+            }
+        }
+        return shuffle;
+    }
+
+    private GraySpecie[] GraySorter(GraySpecie[] selection) {
+        GraySpecie[] Sorted = new GraySpecie[selection.length];
+        for (int i = 0; i < selection.length; i++) {
+            Sorted[i] = new GraySpecie(selection[i].genome, selection[i].fitness);
+        }
+        for (int i = 0; i < selection.length; i++) {
+            for (int j = i + 1; j < selection.length; j++) {
+                if (Sorted[j].fitness > Sorted[i].fitness) {
+                    GraySpecie buff = new GraySpecie(Sorted[i].genome, Sorted[i].fitness);
+                    Sorted[i] = new GraySpecie(Sorted[j].genome, Sorted[j].fitness);
+                    Sorted[j] = new GraySpecie(buff.genome, buff.fitness);
+                }
+            }
+        }
+        return Sorted;
+    }
+
+
+    private GraySpecie[] GraySelection(GraySpecie[] population, BufferedImage orig, int squares, Executor exec) {
+        CompletionService<GraySpecie[]> completionService = new ExecutorCompletionService<GraySpecie[]>(exec);
+        population = GrayShuffle(population);
+        for (int i = 0; i < population.length; i += 4) {
+            GraySpecie[] selection = {population[i], population[i + 1], population[i + 2], population[i + 3]};
+            completionService.submit(new Callable<GraySpecie[]>() {
+                public GraySpecie[] call() {
+                    GraySpecie[] Sorted = GraySorter(selection);
+                    GraySpecie[] Children = GrayCrossover(Sorted[0], Sorted[1], orig, squares);
+                    GraySpecie Mutant1 = GrayMutation(Sorted[2], orig, squares);
+                    GraySpecie Mutant2 = GrayMutation(Sorted[3], orig, squares);
+                    GraySpecie[] new_selection = {Sorted[0], Sorted[1], Sorted[2], Sorted[3], Children[0], Children[1], Mutant1, Mutant2};
+                    GraySpecie[] Sorted2 = GraySorter(new_selection);
+                    GraySpecie[] result = {Sorted2[0], Sorted2[1], Sorted2[2], Sorted2[3]};
+                    return result;
+                }
+            });
+        }
+
+        GraySpecie[] new_population = new GraySpecie[population.length];
+        /*for (int i=0; i<population.length; i+=4){
+            GraySpecie[] selection = {population[i], population[i + 1], population[i + 2], population[i + 3]};
+            GraySpecie[] Sorted = GraySorter(selection);
+            GraySpecie[] Children = GrayCrossover(Sorted[0], Sorted[1], orig, squares);
+            GraySpecie Mutant1 = GrayMutation(Sorted[2], orig, squares);
+            GraySpecie Mutant2 = GrayMutation(Sorted[3], orig, squares);
+            GraySpecie[] new_selection = {Sorted[0], Sorted[1], Sorted[2], Sorted[3], Children[0], Children[1], Mutant1, Mutant2};
+            GraySpecie[] Sorted2 = GraySorter(new_selection);
+            GraySpecie[] result = {Sorted2[0], Sorted2[1], Sorted2[2], Sorted2[3]};
+            new_population[i] = result[0];
+            new_population[i + 1] = result[1];
+            new_population[i + 2] = result[2];
+            new_population[i + 3] = result[3];
+        }*/
+        for (int i = 0; i < population.length; i += 4) {
+            try {
+                Future<GraySpecie[]> resultFuture = completionService.take(); //blocks if none available
+                GraySpecie[] result = resultFuture.get();
+                new_population[i] = result[0];
+                new_population[i + 1] = result[1];
+                new_population[i + 2] = result[2];
+                new_population[i + 3] = result[3];
+            } catch (Exception e) {
+                System.out.println("BIG Problems.");
+            }
+        }
+        new_population = GraySorter(new_population);
+        return new_population;
+    }
+
+    private ArrayList<GrayGene> GeneticShadows(BufferedImage origin, int squares) {
+        Executor executor = Executors.newFixedThreadPool(8);
+        GraySpecie[] population = new GraySpecie[56];
+        for (int i = 0; i < 56; i++) {
+            ArrayList<GrayGene> genome = RandomGenes(squares);
+            population[i] = new GraySpecie(genome, GrayFitness(origin, genome, squares));
+        }
+        GraySpecie[] new_population = population;
+        new_population = GraySorter(new_population);
+        GraySpecie Best = new_population[0];
+        int i = 0;
+        int fit_prev = Best.fitness;
+        int sameFit = 0;
+        while (Best.fitness < Best.genome.size()) {
+            new_population = GraySelection(new_population, origin, squares, executor);
+            if (new_population[0].fitness > Best.fitness) {
+                Best = new_population[0];
+                System.out.println(i + " best population number");
+            }
+            i++;
+            if (Best.fitness == fit_prev) {
+                sameFit++;
+                if (sameFit % 20 == 0) {
+
+                    System.out.println("Need to happen.");
+                }
+                if (sameFit > 100) {
+                    break;
+                }
+            } else {
+                fit_prev = Best.fitness;
+                sameFit = 0;
+                if (Best.fitness==Best.genome.size()/10){
+                    BufferedImage gray = GrayImage(Best.genome);
+                    String name = ("Gray".concat( Integer.toString(i))).concat(".jpg");
+                    try {
+                        File output = new File(name);
+                        ImageIO.write(gray, "jpg", output);
+                    } catch (Exception e) {
+                        System.out.println("Troubles with picture saving.");
+                    }
+                }
+            }
+            if (i % 10 == 0)
+                System.out.println("Iteration num: " + i + " Fit: " + Best.fitness + " from "+ Best.genome.size());
+        }
+
+
+        System.out.println(Best.fitness);
+        BufferedImage gray = GrayImage(Best.genome);
+        try {
+            File output = new File("GeneticShadows.jpg");
+            ImageIO.write(gray, "jpg", output);
+        } catch (Exception e) {
+            System.out.println("Troubles with picture saving.");
+        }
+        return Best.genome;
+    }
+
 
     private BufferedImage Squares(BufferedImage Background, ArrayList<int[]> squares, int squaresInLine) {
         for (int i = 0; i < squares.size(); i++) {
@@ -1238,6 +1496,13 @@ public class Test extends JPanel {
             flag = 0;
         }
         System.out.println(Best.fitness);
+        BufferedImage colourBetter = ImageFromColorEnhancement(whatToDraw, Background);
+        try {
+            File output = new File("Enhanced.jpg");
+            ImageIO.write(colourBetter, "jpg", output);
+        } catch (Exception e) {
+            System.out.println("Troubles with picture saving.");
+        }
         return whatToDraw;
     }
 
